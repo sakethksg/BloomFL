@@ -1,0 +1,39 @@
+# Core ML
+torch>=2.2.0
+torchvision>=0.17.0
+numpy>=1.26.0
+
+# Object Detection — YOLOv12n
+ultralytics>=8.3.0
+
+# Webcam / Video — real-time inference
+opencv-python>=4.9.0
+
+# Federated Learning
+flwr>=1.21.0
+
+# Networking & P2P
+grpcio>=1.62.0
+grpcio-tools>=1.62.0
+
+# Peer Discovery
+zeroconf>=0.132.0
+
+# Security / Cryptography
+cryptography>=42.0.0
+
+# System Monitoring
+psutil>=5.9.0
+
+# Configuration
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+
+# Testing
+pytest>=8.0.0
+pytest-timeout>=2.3.0
+pytest-mock>=3.14.0
+
+# Utilities
+rich>=13.7.0
+click>=8.1.0
