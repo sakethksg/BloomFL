@@ -81,6 +81,12 @@ class Config(BaseSettings):
     sim_network_delay_std_ms: float = 0.0
     sim_failure_probability: float = 0.0
 
+    # ── YOLO Inference ────────────────────────────────────────────────────────
+    yolo_checkpoint: str = "yolo12n.pt"
+    yolo_conf: float = 0.35
+    yolo_img_size: int = 320
+    yolo_device: str = "cpu"
+
     # ── Field validators ──────────────────────────────────────────────────────
 
     @field_validator("train_epochs_per_round")

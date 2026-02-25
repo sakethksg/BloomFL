@@ -67,3 +67,65 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
+  # ── Dashboard API (FastAPI) ────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bloomfl:latest
+    command: >
+      sh -c "/home/bloomfl/.bloomfl/venv/bin/uvicorn api.main:app
+             --host 0.0.0.0 --port 8000 --log-level info"
+    ports:
+      - "8000:8000"
+    environment:
+      BLOOMFL_METRICS_DIR: /home/bloomfl/.bloomfl/metrics
+      BLOOMFL_KEY_STORAGE_DIR: /home/bloomfl/.bloomfl/keys
+      BLOOMFL_DATA_DIR: /home/bloomfl/.bloomfl/data
+    volumes:
+      - ./results/metrics:/home/bloomfl/.bloomfl/metrics
+      - ./results/keys:/home/bloomfl/.bloomfl/keys
+      - .:/app
+    working_dir: /app
+    depends_on:
+      - node
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "2"
+
+  # ── Dashboard Frontend (Next.js) ───────────────────────────────────────────
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm run build && npm start"
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api:8000}
+      NODE_ENV: production
+      PORT: 3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "2"

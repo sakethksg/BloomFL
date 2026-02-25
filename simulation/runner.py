@@ -183,6 +183,23 @@ class SimulationRunner:
         self._metrics_dir.mkdir(parents=True, exist_ok=True)
         self._keys_dir.mkdir(parents=True, exist_ok=True)
 
+        # Tracked so stop() can terminate them
+        self._active_processes: list[multiprocessing.Process] = []
+
+    # ── Stop support ───────────────────────────────────────────────────────────
+
+    def stop(self) -> None:
+        """Terminate all active node processes immediately."""
+        for p in self._active_processes:
+            if p.is_alive():
+                logger.info("Terminating process %s", p.name)
+                p.terminate()
+        for p in self._active_processes:
+            p.join(timeout=5)
+            if p.is_alive():
+                p.kill()
+        self._active_processes.clear()
+
     # ── Public ─────────────────────────────────────────────────────────────────
 
     def run(self) -> SimulationResult:
@@ -193,6 +210,7 @@ class SimulationRunner:
         """
         all_ports = [self._base_port + i for i in range(self._num_nodes)]
         processes: list[multiprocessing.Process] = []
+        self._active_processes.clear()
 
         logger.info(
             "Starting simulation: %d nodes, %d rounds, transport=%s",
@@ -222,6 +240,7 @@ class SimulationRunner:
             )
             p.start()
             processes.append(p)
+            self._active_processes.append(p)
             # Brief stagger to avoid port collision during TCP startup
             time.sleep(0.15)
 
@@ -240,6 +259,7 @@ class SimulationRunner:
             if p.name.startswith("bloomfl-"):
                 p.join(timeout=10)
 
+        self._active_processes.clear()
         wall_time = time.monotonic() - t0
         logger.info("All nodes finished in %.1f seconds", wall_time)
 
