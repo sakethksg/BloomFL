@@ -1,0 +1,121 @@
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python - General
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+pytest.ini
+
+# Logs
+*.log
+logs/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE specific
+Claude.md
+
+# Build & Artifacts
+*.whl
+*.zip
+dist/
+
+# src/ folder
+src/bloomfl/__pycache__/
+src/bloomfl/*.egg-info/
+
+# adaptation/ module
+src/bloomfl/adaptation/__pycache__/
+
+# discovery/ module
+src/bloomfl/discovery/__pycache__/
+
+# flower_client/ module
+src/bloomfl/flower_client/__pycache__/
+
+# gossip/ module
+src/bloomfl/gossip/__pycache__/
+
+# inference/ module
+src/bloomfl/inference/__pycache__/
+
+# models/ module
+src/bloomfl/models/__pycache__/
+
+# monitoring/ module
+src/bloomfl/monitoring/__pycache__/
+
+# node/ module
+src/bloomfl/node/__pycache__/
+
+# security/ module
+src/bloomfl/security/__pycache__/
+
+# transport/ module
+src/bloomfl/transport/__pycache__/
+
+# simulation/ folder
+simulation/__pycache__/
+
+# tests/ folder
+tests/__pycache__/
+
+# Generated Files
+generated/
+proto/*.pb2.py
+proto/*.pb2_grpc.py
+
+# Model Files (Large)
+*.pt
+*.pth
+*.onnx
+*.h5
+
+# Docker
+.docker/
+docker/.env
