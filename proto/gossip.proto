@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package bloomfl;
+
+// GossipService — bidirectional parameter exchange between two peers.
+// Each node acts as both server (servicer) and client (stub).
+service GossipService {
+  // Synchronous unary exchange: caller sends its parameters, receives peer's.
+  rpc ExchangeParameters (ParameterMessage) returns (ParameterMessage);
+  // Ping — lightweight liveness check.
+  rpc Ping (PingRequest) returns (PingResponse);
+}
+
+// ParameterMessage carries an encrypted serialised model parameter payload.
+// The nonce + public_key allow the receiver to complete the ECDHE handshake
+// and decrypt the payload on the fly.
+message ParameterMessage {
+  string node_id      = 1;  // sender's node identifier
+  bytes  payload      = 2;  // AES-256-GCM ciphertext (serialised weight list)
+  bytes  nonce        = 3;  // 12-byte GCM nonce
+  bytes  public_key   = 4;  // sender's ephemeral ECDH public key (PEM)
+  int64  round        = 5;  // local gossip round counter
+  float  weight       = 6;  // number of training samples (for weighted avg)
+  bytes  data_hash    = 7;  // SHA-256 of plaintext payload (integrity check)
+}
+
+message PingRequest {
+  string node_id = 1;
+}
+
+message PingResponse {
+  string node_id = 1;
+  bool   alive   = 2;
+}
