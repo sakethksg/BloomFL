@@ -1,0 +1,22 @@
+[
+  { "id": 1,  "node_id": "node-0a1b", "status": "active", "eval_accuracy": 0.913, "eval_loss": 0.182, "gossip_peers": 4, "energy_mw": 423, "temperature_c": 58.2, "round": 18 },
+  { "id": 2,  "node_id": "node-1c2d", "status": "active", "eval_accuracy": 0.887, "eval_loss": 0.241, "gossip_peers": 3, "energy_mw": 510, "temperature_c": 63.1, "round": 18 },
+  { "id": 3,  "node_id": "node-2e3f", "status": "active", "eval_accuracy": 0.871, "eval_loss": 0.287, "gossip_peers": 5, "energy_mw": 389, "temperature_c": 55.7, "round": 17 },
+  { "id": 4,  "node_id": "node-3g4h", "status": "active", "eval_accuracy": 0.902, "eval_loss": 0.211, "gossip_peers": 2, "energy_mw": 601, "temperature_c": 71.4, "round": 18 },
+  { "id": 5,  "node_id": "node-4i5j", "status": "idle",   "eval_accuracy": 0.834, "eval_loss": 0.342, "gossip_peers": 0, "energy_mw": 95,  "temperature_c": 41.2, "round": 14 },
+  { "id": 6,  "node_id": "node-5k6l", "status": "active", "eval_accuracy": 0.928, "eval_loss": 0.157, "gossip_peers": 6, "energy_mw": 478, "temperature_c": 60.9, "round": 18 },
+  { "id": 7,  "node_id": "node-6m7n", "status": "active", "eval_accuracy": 0.895, "eval_loss": 0.223, "gossip_peers": 4, "energy_mw": 445, "temperature_c": 62.3, "round": 17 },
+  { "id": 8,  "node_id": "node-7o8p", "status": "error",  "eval_accuracy": 0.621, "eval_loss": 0.891, "gossip_peers": 0, "energy_mw": 212, "temperature_c": 48.6, "round": 9  },
+  { "id": 9,  "node_id": "node-8q9r", "status": "active", "eval_accuracy": 0.917, "eval_loss": 0.173, "gossip_peers": 3, "energy_mw": 530, "temperature_c": 64.1, "round": 18 },
+  { "id": 10, "node_id": "node-9s0t", "status": "active", "eval_accuracy": 0.876, "eval_loss": 0.261, "gossip_peers": 5, "energy_mw": 467, "temperature_c": 59.8, "round": 16 },
+  { "id": 11, "node_id": "node-au1v", "status": "active", "eval_accuracy": 0.942, "eval_loss": 0.134, "gossip_peers": 4, "energy_mw": 398, "temperature_c": 57.3, "round": 18 },
+  { "id": 12, "node_id": "node-bw2x", "status": "idle",   "eval_accuracy": 0.811, "eval_loss": 0.388, "gossip_peers": 1, "energy_mw": 112, "temperature_c": 43.5, "round": 12 },
+  { "id": 13, "node_id": "node-cy3z", "status": "active", "eval_accuracy": 0.908, "eval_loss": 0.196, "gossip_peers": 3, "energy_mw": 489, "temperature_c": 61.7, "round": 18 },
+  { "id": 14, "node_id": "node-dz4a", "status": "active", "eval_accuracy": 0.863, "eval_loss": 0.301, "gossip_peers": 2, "energy_mw": 421, "temperature_c": 56.4, "round": 15 },
+  { "id": 15, "node_id": "node-ea5b", "status": "active", "eval_accuracy": 0.931, "eval_loss": 0.149, "gossip_peers": 6, "energy_mw": 512, "temperature_c": 66.2, "round": 18 },
+  { "id": 16, "node_id": "node-fb6c", "status": "active", "eval_accuracy": 0.889, "eval_loss": 0.234, "gossip_peers": 4, "energy_mw": 463, "temperature_c": 60.1, "round": 17 },
+  { "id": 17, "node_id": "node-gc7d", "status": "error",  "eval_accuracy": 0.551, "eval_loss": 1.124, "gossip_peers": 0, "energy_mw": 178, "temperature_c": 45.3, "round": 7  },
+  { "id": 18, "node_id": "node-hd8e", "status": "active", "eval_accuracy": 0.921, "eval_loss": 0.168, "gossip_peers": 5, "energy_mw": 497, "temperature_c": 63.8, "round": 18 },
+  { "id": 19, "node_id": "node-ie9f", "status": "active", "eval_accuracy": 0.874, "eval_loss": 0.273, "gossip_peers": 3, "energy_mw": 441, "temperature_c": 58.9, "round": 16 },
+  { "id": 20, "node_id": "node-jf0g", "status": "idle",   "eval_accuracy": 0.798, "eval_loss": 0.421, "gossip_peers": 0, "energy_mw": 88,  "temperature_c": 40.7, "round": 11 }
+]
