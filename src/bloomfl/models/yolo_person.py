@@ -314,6 +314,10 @@ class YOLOPersonModel(nn.Module):
         self.yolo: nn.Module = yolo_wrapper.model
         self.img_size = img_size
 
+        # Pretrained .pt checkpoints are saved for inference (requires_grad=False).
+        # Re-enable gradients so that loss.backward() works during FL training.
+        self.yolo.requires_grad_(True)
+
         # Ensure model.args supports attribute access (needed by the loss
         # function which does self.hyp.box / self.hyp.cls / self.hyp.dfl).
         # When loading from YAML ultralytics stores args as a plain dict;
@@ -491,6 +495,11 @@ def train_one_epoch(
         :class:`EpochResult` with mean detection loss and detection precision.
     """
     model.train()
+    # Guard: pretrained checkpoints are saved with requires_grad=False for
+    # inference.  Re-enable gradients before every epoch so backward() works
+    # even if set_weights() or an external caller froze the parameters.
+    for p in model.parameters():
+        p.requires_grad_(True)
     total_loss = 0.0
     n_batches = 0
 

@@ -119,3 +119,4 @@ proto/*.pb2_grpc.py
 # Docker
 .docker/
 docker/.env
+.vercel
