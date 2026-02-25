@@ -1,0 +1,69 @@
+# BloomFL — docker-compose deployment
+#
+# Scalable decentralised edge-intelligence nodes.
+# Each replica runs on the host network (required for mDNS multicast).
+#
+# Quick start (single node):
+#   docker-compose up --build
+#
+# Scale to 10 nodes (each gets a unique port via entrypoint.sh):
+#   docker-compose up --build --scale node=10
+#
+# Override transport or gossip interval per deployment:
+#   BLOOMFL_TRANSPORT=grpc docker-compose up --scale node=5
+
+services:
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bloomfl:latest
+
+    # host networking is required on Linux so mDNS multicast (224.0.0.251)
+    # works across all replicas on the same machine.
+    network_mode: host
+
+    restart: unless-stopped
+
+    environment:
+      # Core node settings — override as needed
+      BLOOMFL_TRANSPORT: ${BLOOMFL_TRANSPORT:-tcp}
+      BLOOMFL_GOSSIP_INTERVAL_SECONDS: ${BLOOMFL_GOSSIP_INTERVAL_SECONDS:-15}
+      BLOOMFL_TRAIN_EPOCHS_PER_ROUND: ${BLOOMFL_TRAIN_EPOCHS_PER_ROUND:-1}
+      BLOOMFL_ADAPTATION_ENABLED: ${BLOOMFL_ADAPTATION_ENABLED:-true}
+      BLOOMFL_AGGREGATION_STRATEGY: ${BLOOMFL_AGGREGATION_STRATEGY:-weighted_avg}
+      # Data / storage inside container home
+      BLOOMFL_KEY_STORAGE_DIR: /home/bloomfl/.bloomfl/keys
+      BLOOMFL_METRICS_DIR: /home/bloomfl/.bloomfl/metrics
+      BLOOMFL_DATA_DIR: /home/bloomfl/.bloomfl/data
+      # Optional: static peer list (comma-separated host:port) if mDNS unavailable
+      BLOOMFL_PEER_ADDRS: ${BLOOMFL_PEER_ADDRS:-}
+
+    volumes:
+      # Mount local results directory for metric persistence
+      - ./results/metrics:/home/bloomfl/.bloomfl/metrics
+      - ./results/keys:/home/bloomfl/.bloomfl/keys
+
+    # Resource limits — reasonable defaults for edge devices
+    deploy:
+      replicas: 1     # override with --scale node=N
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "${BLOOMFL_LISTEN_PORT:-50051}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
