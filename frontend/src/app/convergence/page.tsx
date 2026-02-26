@@ -108,7 +108,7 @@ export default function ConvergencePage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((c) => (
           <Card key={c.label} className="border-2 hover:border-primary/50 transition-colors overflow-hidden">
-            <CardHeader className="pb-4 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardHeader className="pb-4">
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{c.label}</p>
             </CardHeader>
             <CardContent className="pt-3">
@@ -120,7 +120,7 @@ export default function ConvergencePage() {
 
       {/* Main convergence chart */}
       <Card className="border-2 overflow-hidden">
-        <CardHeader className="pb-4 bg-muted/40 border-b">
+        <CardHeader className="pb-4">
           <CardTitle className="text-xl font-bold flex items-center gap-2">
             <span className="inline-block w-3 h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"></span>
             Accuracy Convergence Over Time

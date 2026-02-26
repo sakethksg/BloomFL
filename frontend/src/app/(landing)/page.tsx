@@ -173,7 +173,7 @@ export default function LandingPage() {
 
       {/* CTA Section */}
       <section className="relative py-24 px-4 lg:px-8">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-3xl">
           <Card className="border-2 border-primary/50 bg-gradient-to-br from-primary/5 to-accent/5 relative">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl mb-2">Ready to get started?</CardTitle>
@@ -182,12 +182,12 @@ export default function LandingPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/dashboard" className="flex-1">
-                <Button size="lg" className="w-full">
+              <Link href="/dashboard">
+                <Button size="lg" className="w-full sm:w-auto">
                   Launch Dashboard
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="flex-1">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
                 View Docs
               </Button>
             </CardContent>
