@@ -226,6 +226,7 @@ function CheckpointSelector({
 export default function InferencePage() {
   const [conf, setConf] = useState(0.35);
   const [multiMode, setMultiMode] = useState(false);
+  const newImageInputRef = useRef<HTMLInputElement>(null);
 
   // Checkpoint state
   const [checkpoints, setCheckpoints] = useState<CheckpointInfo[]>([]);
@@ -328,179 +329,201 @@ export default function InferencePage() {
 
   return (
     <div className="w-full">
-      <div className="mx-auto max-w-4xl px-4 lg:px-6 py-6 pb-12 space-y-6">
+      <div className="mx-auto max-w-7xl px-4 lg:px-6 py-6 pb-12 space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2 mb-2">
-              <IconScan className="size-7" /> YOLO Detection
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Upload an image to run person detection and compare results across node checkpoints.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {!modelLoaded && (
-              <Badge variant="destructive" className="flex items-center gap-1 whitespace-nowrap">
-                <IconAlertTriangle className="size-3" /> Model not loaded
-              </Badge>
-            )}
-            {modelLoaded && <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-600 whitespace-nowrap"><IconCircleCheck className="size-3" /> Model ready</Badge>}
-          </div>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2 mb-2">
+            <IconScan className="size-7" /> YOLO Detection
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Upload an image to run person detection and compare results across node checkpoints.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {!modelLoaded && (
+            <Badge variant="destructive" className="flex items-center gap-1 whitespace-nowrap">
+              <IconAlertTriangle className="size-3" /> Model not loaded
+            </Badge>
+          )}
+          {modelLoaded && <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-600 whitespace-nowrap"><IconCircleCheck className="size-3" /> Model ready</Badge>}
         </div>
       </div>
 
-      {/* Mode toggle + settings */}
-      <Card className="border-2">
-        <CardHeader className="pb-6">
-          <div className="space-y-4">
-            {/* Mode toggle */}
-            <div className="flex gap-2 p-1 rounded-lg border bg-muted/40">
-              <button
-                onClick={() => setMultiMode(false)}
-                className={`flex-1 px-3 py-2 rounded-md text-sm font-semibold transition-all whitespace-nowrap ${!multiMode ? "bg-white dark:bg-slate-950 text-primary shadow-sm border border-primary/20" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                Single
-              </button>
-              <button
-                onClick={() => setMultiMode(true)}
-                className={`flex-1 px-3 py-2 rounded-md text-sm font-semibold transition-all whitespace-nowrap ${multiMode ? "bg-white dark:bg-slate-950 text-primary shadow-sm border border-primary/20" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                Compare All
-              </button>
-            </div>
-            
-            {/* Confidence slider */}
-            <div>
-              <ConfSlider value={conf} onChange={setConf} />
-            </div>
-          </div>
-        </CardHeader>
-        {multiMode && (
-          <CardContent className="pt-0 space-y-4 border-t">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">Checkpoints to Compare</p>
-              <Button variant="ghost" size="sm" onClick={refreshCheckpoints} className="gap-1.5 h-8 text-xs">
-                <IconRefresh className="size-3.5" /> Refresh
-              </Button>
-            </div>
-            <CardDescription className="text-xs">
-              Each selected checkpoint runs inference independently — results appear side-by-side.
-            </CardDescription>
-            <CheckpointSelector
-              checkpoints={checkpoints}
-              selected={selectedCkpts}
-              onToggle={toggleCheckpoint}
-              onSelectAll={selectAll}
-              loading={ckptLoading}
-            />
-          </CardContent>
-        )}
-      </Card>
+      {/* Side-by-side layout: settings left, workspace right */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
 
-      {/* Error */}
-      {error && (
-        <div className="rounded-lg border-l-4 border-l-destructive bg-destructive/10 p-4 text-sm text-destructive flex items-start gap-3">
-          <IconAlertTriangle className="size-5 mt-0.5 shrink-0 flex-none" />
-          <p className="font-medium">{error}</p>
+        {/* ── Left panel: controls ── */}
+        <div className="w-full lg:w-80 shrink-0 space-y-4">
+          <Card className="border-2">
+            <CardHeader className="pb-6">
+              <div className="space-y-4">
+                {/* Mode toggle */}
+                <div className="flex gap-2 p-1 rounded-lg border bg-muted/40">
+                  <button
+                    onClick={() => setMultiMode(false)}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-semibold transition-all whitespace-nowrap ${!multiMode ? "bg-background text-primary shadow-sm border border-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Single
+                  </button>
+                  <button
+                    onClick={() => setMultiMode(true)}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm font-semibold transition-all whitespace-nowrap ${multiMode ? "bg-background text-primary shadow-sm border border-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Compare All
+                  </button>
+                </div>
+
+                {/* Confidence slider */}
+                <div>
+                  <ConfSlider value={conf} onChange={setConf} />
+                </div>
+              </div>
+            </CardHeader>
+            {multiMode && (
+              <CardContent className="pt-0 space-y-4 border-t">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold">Checkpoints to Compare</p>
+                  <Button variant="ghost" size="sm" onClick={refreshCheckpoints} className="gap-1.5 h-8 text-xs">
+                    <IconRefresh className="size-3.5" /> Refresh
+                  </Button>
+                </div>
+                <CardDescription className="text-xs">
+                  Each selected checkpoint runs inference independently — results appear side-by-side.
+                </CardDescription>
+                <CheckpointSelector
+                  checkpoints={checkpoints}
+                  selected={selectedCkpts}
+                  onToggle={toggleCheckpoint}
+                  onSelectAll={selectAll}
+                  loading={ckptLoading}
+                />
+              </CardContent>
+            )}
+          </Card>
         </div>
-      )}
 
-      {/* Upload zone (when no image loaded) */}
-      {!hasResults && <DropZone onFile={handleFile} disabled={!modelLoaded} />}
+        {/* ── Right panel: upload + results ── */}
+        <div className="flex-1 min-w-0 space-y-6">
 
-      {/* Results */}
-      {hasResults && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold">Detection Results</h2>
-              <p className="text-sm text-muted-foreground mt-1">Results from {multiMode ? 'selected nodes' : 'single checkpoint'}</p>
-            </div>
-            <Button variant="ghost" size="sm" onClick={handleClear} className="gap-1.5 h-9">
-              <IconX className="size-4" /> Clear
-            </Button>
-          </div>
-
-          {/* ── Single mode ── */}
-          {!multiMode && (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Card className="flex flex-col overflow-hidden border-2">
-                <CardHeader className="pb-3 border-b">
-                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Original Image</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 flex items-center justify-center pt-6">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={originalSrc!} alt="Original" className="w-full rounded-lg object-contain max-h-96" />
-                </CardContent>
-              </Card>
-              <Card className="flex flex-col overflow-hidden border-2">
-                <CardHeader className="pb-3 border-b">
-                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Detection Results</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 flex items-center justify-center pt-6">
-                  {loading ? (
-                    <div className="flex h-64 items-center justify-center gap-3 flex-col text-muted-foreground">
-                      <IconLoader2 className="size-8 animate-spin text-primary" />
-                      <p className="text-sm font-medium">Running inference…</p>
-                    </div>
-                  ) : annotatedSrc ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={annotatedSrc} alt="Annotated" className="w-full rounded-lg object-contain max-h-96" />
-                  ) : null}
-                </CardContent>
-              </Card>
+          {/* Error */}
+          {error && (
+            <div className="rounded-lg border-l-4 border-l-destructive bg-destructive/10 p-4 text-sm text-destructive flex items-start gap-3">
+              <IconAlertTriangle className="size-5 mt-0.5 shrink-0 flex-none" />
+              <p className="font-medium">{error}</p>
             </div>
           )}
 
-          {/* ── Multi-node mode ── */}
-          {multiMode && (
-            <div className="space-y-6">
-              {/* Original image */}
-              <Card className="lg:max-w-md border-2 overflow-hidden">
-                <CardHeader className="pb-3 border-b">
-                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Input Image</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={originalSrc!} alt="Input" className="w-full rounded-lg object-contain max-h-72" />
-                </CardContent>
-              </Card>
+          {/* Upload zone (when no image loaded) */}
+          {!hasResults && <DropZone onFile={handleFile} disabled={!modelLoaded} />}
 
-              {/* Node result grid */}
-              {loading ? (
-                <div className="flex items-center gap-3 text-muted-foreground py-12 justify-center">
-                  <IconLoader2 className="size-6 animate-spin text-primary" />
-                  <p className="text-sm font-medium">Running inference across {selectedCkpts.size} checkpoint{selectedCkpts.size !== 1 ? "s" : ""}…</p>
+          {/* Results */}
+          {hasResults && (
+            <div className="space-y-4">
+
+              {/* ── Single mode ── */}
+              {!multiMode && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <Card className="flex flex-col overflow-hidden border-2">
+                    <CardHeader className="pb-3 border-b">
+                      <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Original</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex items-center justify-center pt-4 pb-4">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={originalSrc!} alt="Original" className="w-full rounded-lg object-contain max-h-80" />
+                    </CardContent>
+                  </Card>
+                  <Card className="flex flex-col overflow-hidden border-2">
+                    <CardHeader className="pb-3 border-b">
+                      <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Annotated</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex items-center justify-center pt-4 pb-4">
+                      {loading ? (
+                        <div className="flex h-64 items-center justify-center gap-3 flex-col text-muted-foreground">
+                          <IconLoader2 className="size-8 animate-spin text-primary" />
+                          <p className="text-sm font-medium">Running inference…</p>
+                        </div>
+                      ) : annotatedSrc ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={annotatedSrc} alt="Annotated" className="w-full rounded-lg object-contain max-h-80" />
+                      ) : null}
+                    </CardContent>
+                  </Card>
                 </div>
-              ) : multiResults.length > 0 ? (
+              )}
+
+              {/* ── Multi-node mode ── */}
+              {multiMode && (
                 <div className="space-y-4">
+                  {/* Summary bar with thumbnail */}
                   <div className="flex items-center gap-3 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold">{multiResults.length} Node Results</h3>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={originalSrc!} alt="Input" className="h-12 w-16 rounded-md object-cover border shrink-0" />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {loading ? (
+                        <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                          <IconLoader2 className="size-4 animate-spin" />
+                          Running across {selectedCkpts.size} checkpoint{selectedCkpts.size !== 1 ? "s" : ""}…
+                        </span>
+                      ) : multiResults.length > 0 ? (
+                        <>
+                          <span className="text-sm font-semibold">{multiResults.length} Node Result{multiResults.length !== 1 ? "s" : ""}</span>
+                          <Badge variant="outline" className="text-xs px-2 py-0.5">
+                            {multiResults.reduce((s, r) => s + r.person_count, 0)} persons detected
+                          </Badge>
+                        </>
+                      ) : null}
                     </div>
-                    <Badge variant="outline" className="text-base px-3 py-1">
-                      {multiResults.reduce((s, r) => s + r.person_count, 0)} total persons detected
-                    </Badge>
+                    <Button variant="ghost" size="sm" onClick={handleClear} className="gap-1.5 h-8 ml-auto text-xs">
+                      <IconX className="size-3.5" /> Clear
+                    </Button>
                   </div>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {multiResults.map((r, i) => (
-                      <NodeResultCard key={i} result={r} />
-                    ))}
+
+                  {/* Node result grid */}
+                  {!loading && multiResults.length > 0 && (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {multiResults.map((r, i) => (
+                        <NodeResultCard key={i} result={r} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Single mode clear + upload another */}
+              {!multiMode && (
+                <div className="flex items-center justify-between pt-2">
+                  <p className="text-xs text-muted-foreground">Upload a new image to replace</p>
+                  <div className="flex gap-2">
+                    <input
+                      ref={newImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) { handleFile(f); e.target.value = ""; } }}
+                    />
+                    <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => newImageInputRef.current?.click()}>
+                      <IconUpload className="size-3.5" /> New image
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={handleClear} className="gap-1.5 h-8 text-xs">
+                      <IconX className="size-3.5" /> Clear
+                    </Button>
                   </div>
                 </div>
-              ) : null}
+              )}
+
+              {/* Multi mode upload another */}
+              {multiMode && !loading && (
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-muted-foreground mb-3">Try another image</p>
+                  <DropZone onFile={handleFile} disabled={!modelLoaded} />
+                </div>
+              )}
             </div>
           )}
 
-          {/* Upload another */}
-          <div className="pt-4">
-            <h3 className="text-sm font-semibold mb-4">Upload Another Image</h3>
-            <DropZone onFile={handleFile} disabled={!modelLoaded} />
-          </div>
         </div>
-      )}
+      </div>
       </div>
     </div>
   );
