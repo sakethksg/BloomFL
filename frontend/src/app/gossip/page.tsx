@@ -255,9 +255,16 @@ export default function GossipPage() {
         </CardHeader>
         <CardContent className="overflow-hidden">
           {graphNodes.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-              No gossip data for round {round}
-            </p>
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-4">
+                <circle cx="18" cy="18" r="3"/>
+                <circle cx="6" cy="6" r="3"/>
+                <circle cx="13" cy="13" r="3"/>
+                <path d="M6 21V9a9 9 0 0 0 9 9"/>
+              </svg>
+              <p className="text-base font-medium text-muted-foreground mb-1">No gossip data for round {round}</p>
+              <p className="text-sm text-muted-foreground/60">Nodes haven't exchanged models yet</p>
+            </div>
           ) : (
             <GossipCanvas nodes={graphNodes} edges={graphEdges} />
           )}

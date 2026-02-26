@@ -470,9 +470,18 @@ export function DataTable({
                   <TableRow>
                     <TableCell
                       colSpan={columns.length}
-                      className="h-24 text-center"
+                      className="h-48 text-center"
                     >
-                      No results.
+                      <div className="flex flex-col items-center justify-center py-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
+                          <rect width="7" height="7" x="3" y="3" rx="1"/>
+                          <rect width="7" height="7" x="14" y="3" rx="1"/>
+                          <rect width="7" height="7" x="14" y="14" rx="1"/>
+                          <rect width="7" height="7" x="3" y="14" rx="1"/>
+                        </svg>
+                        <p className="text-base font-medium text-muted-foreground mb-1">No nodes available</p>
+                        <p className="text-sm text-muted-foreground/60">Connect nodes to see them here</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}

@@ -34,12 +34,18 @@ export default function NodesPage() {
       {loading ? (
         <Skeleton className="h-64 w-full" />
       ) : nodes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-20 text-center gap-3">
-          <p className="text-sm font-medium">No nodes reporting yet</p>
-          <p className="text-xs text-muted-foreground max-w-xs">
+        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted py-24 text-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-2">
+            <rect width="7" height="7" x="3" y="3" rx="1"/>
+            <rect width="7" height="7" x="14" y="3" rx="1"/>
+            <rect width="7" height="7" x="14" y="14" rx="1"/>
+            <rect width="7" height="7" x="3" y="14" rx="1"/>
+          </svg>
+          <p className="text-base font-semibold text-muted-foreground">No nodes reporting yet</p>
+          <p className="text-sm text-muted-foreground/70 max-w-md">
             Start a simulation to spawn nodes, or run a BloomFL node manually to see live data here.
           </p>
-          <Link href="/simulation" className="text-xs text-primary underline underline-offset-2">Go to Simulation →</Link>
+          <Link href="/simulation" className="mt-2 text-sm text-primary hover:text-primary/80 font-medium underline underline-offset-4">Go to Simulation →</Link>
         </div>
       ) : (
         <div className="rounded-md border">

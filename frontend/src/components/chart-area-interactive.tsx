@@ -107,8 +107,15 @@ export function ChartAreaInteractive() {
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {chartData.length === 0 ? (
-          <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground">
-            No training data yet — start a simulation or connect nodes.
+          <div className="flex h-[250px] items-center justify-center">
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-muted rounded-lg p-8 max-w-md">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-4">
+                <path d="M3 3v18h18"/>
+                <path d="m19 9-5 5-4-4-3 3"/>
+              </svg>
+              <p className="text-base font-semibold text-muted-foreground mb-1">No training data yet</p>
+              <p className="text-sm text-muted-foreground/70 text-center">Start a simulation or connect nodes to see training progress</p>
+            </div>
           </div>
         ) : (
           <ChartContainer
