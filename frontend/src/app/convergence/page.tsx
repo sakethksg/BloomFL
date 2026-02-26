@@ -114,8 +114,15 @@ export default function ConvergencePage() {
         </CardHeader>
         <CardContent>
           {!hasData ? (
-            <div className="flex items-center justify-center h-80 text-muted-foreground text-sm">
-              No convergence data available yet
+            <div className="flex flex-col items-center justify-center h-80 border-2 border-dashed border-muted rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-4">
+                <path d="M3 3v18h18"/>
+                <path d="M18 17V9"/>
+                <path d="M13 17V5"/>
+                <path d="M8 17v-3"/>
+              </svg>
+              <p className="text-base font-medium text-muted-foreground">No convergence data available yet</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Run a federated learning simulation to see convergence metrics</p>
             </div>
           ) : (
           <ResponsiveContainer width="100%" height={320}>
@@ -210,8 +217,12 @@ export default function ConvergencePage() {
         </CardHeader>
         <CardContent>
           {!hasData ? (
-            <div className="flex items-center justify-center h-44 text-muted-foreground text-sm">
-              No standard deviation data available yet
+            <div className="flex flex-col items-center justify-center h-44 border-2 border-dashed border-muted rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-2">
+                <path d="M3 3v18h18"/>
+                <path d="m19 9-5 5-4-4-3 3"/>
+              </svg>
+              <p className="text-sm font-medium text-muted-foreground">No standard deviation data</p>
             </div>
           ) : (
           <ResponsiveContainer width="100%" height={180}>
@@ -248,8 +259,12 @@ export default function ConvergencePage() {
         </CardHeader>
         <CardContent>
           {!hasData ? (
-            <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
-              No gossip data available yet
+            <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-muted rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-2">
+                <path d="M3 3v18h18"/>
+                <path d="m19 9-5 5-4-4-3 3"/>
+              </svg>
+              <p className="text-sm font-medium text-muted-foreground">No gossip data available</p>
             </div>
           ) : (
           <ResponsiveContainer width="100%" height={160}>

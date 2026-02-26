@@ -192,8 +192,13 @@ export default function NodeDetailPage() {
             </CardHeader>
             <CardContent>
               {trainingData.length === 0 ? (
-                <div className="flex items-center justify-center h-60 text-muted-foreground text-sm">
-                  No training data available yet
+                <div className="flex flex-col items-center justify-center h-60 border-2 border-dashed border-muted rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
+                    <path d="M3 3v18h18"/>
+                    <path d="m19 9-5 5-4-4-3 3"/>
+                  </svg>
+                  <p className="text-sm font-medium text-muted-foreground">No accuracy data available yet</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Node hasn't started training</p>
                 </div>
               ) : (
               <ResponsiveContainer width="100%" height={240}>
@@ -216,8 +221,14 @@ export default function NodeDetailPage() {
             <CardHeader><CardTitle className="text-sm">Gossip Latency (ms)</CardTitle></CardHeader>
             <CardContent>
               {gossipData.length === 0 ? (
-                <div className="flex items-center justify-center h-56 text-muted-foreground text-sm">
-                  No gossip data available yet
+                <div className="flex flex-col items-center justify-center h-56 border-2 border-dashed border-muted rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
+                    <circle cx="18" cy="18" r="3"/>
+                    <circle cx="6" cy="6" r="3"/>
+                    <path d="M13 6h3a2 2 0 0 1 2 2v7"/>
+                  </svg>
+                  <p className="text-sm font-medium text-muted-foreground">No gossip latency data</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Node hasn't exchanged models</p>
                 </div>
               ) : (
               <ResponsiveContainer width="100%" height={220}>
@@ -236,8 +247,13 @@ export default function NodeDetailPage() {
             <CardHeader><CardTitle className="text-sm">Bytes Exchanged (KB)</CardTitle></CardHeader>
             <CardContent>
               {gossipData.length === 0 ? (
-                <div className="flex items-center justify-center h-44 text-muted-foreground text-sm">
-                  No gossip data available yet
+                <div className="flex flex-col items-center justify-center h-44 border-2 border-dashed border-muted rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-2">
+                    <circle cx="18" cy="18" r="3"/>
+                    <circle cx="6" cy="6" r="3"/>
+                    <path d="M13 6h3a2 2 0 0 1 2 2v7"/>
+                  </svg>
+                  <p className="text-sm font-medium text-muted-foreground">No bytes exchanged data</p>
                 </div>
               ) : (
               <ResponsiveContainer width="100%" height={180}>
@@ -260,8 +276,15 @@ export default function NodeDetailPage() {
             <CardHeader><CardTitle className="text-sm">Training Epochs per Round (throttle activity)</CardTitle></CardHeader>
             <CardContent>
               {adaptData.length === 0 ? (
-                <div className="flex items-center justify-center h-56 text-muted-foreground text-sm">
-                  No adaptation data available yet
+                <div className="flex flex-col items-center justify-center h-56 border-2 border-dashed border-muted rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
+                    <path d="M3 3v18h18"/>
+                    <path d="M18 17V9"/>
+                    <path d="M13 17V5"/>
+                    <path d="M8 17v-3"/>
+                  </svg>
+                  <p className="text-sm font-medium text-muted-foreground">No training epochs data</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Adaptation metrics not available</p>
                 </div>
               ) : (
               <ResponsiveContainer width="100%" height={220}>
@@ -280,8 +303,12 @@ export default function NodeDetailPage() {
             <CardHeader><CardTitle className="text-sm">Gossip Enabled (1=yes, 0=throttled)</CardTitle></CardHeader>
             <CardContent>
               {adaptData.length === 0 ? (
-                <div className="flex items-center justify-center h-28 text-muted-foreground text-sm">
-                  No adaptation data available yet
+                <div className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-muted rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-1">
+                    <path d="M18 17V9"/>
+                    <path d="M13 17V5"/>
+                  </svg>
+                  <p className="text-xs font-medium text-muted-foreground">No gossip status data</p>
                 </div>
               ) : (
               <ResponsiveContainer width="100%" height={120}>

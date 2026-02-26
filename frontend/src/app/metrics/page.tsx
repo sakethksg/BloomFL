@@ -155,8 +155,13 @@ export default function MetricsPage() {
         </CardHeader>
         <CardContent>
           {lossData.length === 0 ? (
-            <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
-              No loss data available yet
+            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-muted rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
+                <path d="M3 3v18h18"/>
+                <path d="m19 9-5 5-4-4-3 3"/>
+              </svg>
+              <p className="text-sm font-medium text-muted-foreground">No loss data available yet</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Start a simulation to see metrics</p>
             </div>
           ) : (
           <ResponsiveContainer width="100%" height={260}>
@@ -190,8 +195,13 @@ export default function MetricsPage() {
         </CardHeader>
         <CardContent>
           {accData.length === 0 ? (
-            <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
-              No accuracy data available yet
+            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-muted rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
+                <path d="M3 3v18h18"/>
+                <path d="m19 9-5 5-4-4-3 3"/>
+              </svg>
+              <p className="text-sm font-medium text-muted-foreground">No accuracy data available yet</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Start a simulation to see metrics</p>
             </div>
           ) : (
           <ResponsiveContainer width="100%" height={260}>
