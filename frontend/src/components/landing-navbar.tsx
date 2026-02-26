@@ -3,83 +3,100 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { IconMenu2, IconX } from "@tabler/icons-react";
+import {
+  Navbar,
+  NavBody,
+  NavItems,
+  MobileNav,
+  MobileNavHeader,
+  MobileNavToggle,
+  MobileNavMenu,
+} from "@/components/ui/resizable-navbar";
 
 const navLinks = [
-  { href: "/docs", label: "Docs" },
-  { href: "/features", label: "Features" },
-  { href: "/about", label: "About" },
+  { link: "#features", name: "Features" },
+  { link: "#benefits", name: "Benefits" },
+  { link: "#cta", name: "Contact" },
 ];
 
+const Logo = () => (
+  <Link href="/" className="relative z-20 flex items-center gap-2 group mr-4">
+    <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white font-bold text-sm group-hover:shadow-lg transition-shadow">
+      B
+    </div>
+    <span className="font-bold text-lg tracking-tight text-foreground">
+      BloomFL
+    </span>
+  </Link>
+);
+
 export function LandingNavbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 backdrop-blur-xl bg-background/75 shadow-sm">
-      <div className="mx-auto max-w-6xl px-4 lg:px-8 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white font-bold text-sm group-hover:shadow-lg transition-shadow">
-              B
-            </div>
-            <span className="font-bold text-lg tracking-tight">BloomFL</span>
-          </Link>
-
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* CTA Buttons */}
+    <div className="relative w-full">
+      <Navbar>
+        {/* Desktop Navigation */}
+        <NavBody>
+          <Logo />
+          <NavItems items={navLinks} />
           <div className="flex items-center gap-2">
-            <Link href="/dashboard" className="hidden sm:inline-block">
-              <Button variant="ghost" size="sm" className="text-sm">
-                Dashboard
-              </Button>
-            </Link>
-            <Button size="sm" className="text-sm">
-              Get Started
-            </Button>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-md hover:bg-muted/50 transition-colors"
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="hidden text-sm sm:inline-flex"
             >
-              {isOpen ? (
-                <IconX className="size-5" />
-              ) : (
-                <IconMenu2 className="size-5" />
-              )}
-            </button>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+            <Button asChild size="sm" className="text-sm">
+              <Link href="#cta">Get Started</Link>
+            </Button>
           </div>
-        </div>
+        </NavBody>
 
-        {/* Mobile Nav */}
-        {isOpen && (
-          <div className="md:hidden border-t border-border/40 mt-4 pt-4 space-y-1">
-            {navLinks.map((link) => (
+        {/* Mobile Navigation */}
+        <MobileNav>
+          <MobileNavHeader>
+            <Logo />
+            <MobileNavToggle
+              isOpen={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            />
+          </MobileNavHeader>
+
+          <MobileNavMenu
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+          >
+            {navLinks.map((item, idx) => (
               <Link
-                key={link.href}
-                href={link.href}
-                className="block px-4 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                onClick={() => setIsOpen(false)}
+                key={`mobile-link-${idx}`}
+                href={item.link}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="relative text-neutral-600 dark:text-neutral-300"
               >
-                {link.label}
+                <span className="block">{item.name}</span>
               </Link>
             ))}
-          </div>
-        )}
-      </div>
-    </nav>
+            <div className="flex w-full flex-col gap-4 mt-4">
+              <Button asChild variant="outline" className="w-full">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              </Button>
+              <Button asChild className="w-full">
+                <Link href="#cta" onClick={() => setIsMobileMenuOpen(false)}>
+                  Get Started
+                </Link>
+              </Button>
+            </div>
+          </MobileNavMenu>
+        </MobileNav>
+      </Navbar>
+    </div>
   );
 }

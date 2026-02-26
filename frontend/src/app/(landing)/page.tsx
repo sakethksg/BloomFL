@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LandingNavbar } from "@/components/landing-navbar";
 import {
   IconNetwork,
   IconDatabase,
@@ -57,10 +56,8 @@ export default function LandingPage() {
           <div className="absolute top-1/4 left-1/2 w-72 h-72 bg-chart-2/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "3s" }} />
       </div>
 
-      <LandingNavbar />
-
       {/* Hero Section */}
-      <section className="relative pt-40 pb-24 px-4 lg:px-8">
+      <section className="relative pt-16 pb-24 px-4 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="text-center space-y-6 mb-12">
             <Badge variant="outline" className="mx-auto">
@@ -116,7 +113,10 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="relative py-24 px-4 lg:px-8 bg-muted/20">
+      <section
+        id="features"
+        className="relative py-24 px-4 lg:px-8 bg-muted/20 scroll-mt-36"
+      >
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12 space-y-2">
             <h2 className="text-4xl font-bold tracking-tight">Powerful Features</h2>
@@ -149,7 +149,10 @@ export default function LandingPage() {
       </section>
 
       {/* Benefits Section */}
-      <section className="relative py-24 px-4 lg:px-8 bg-muted/40">
+      <section
+        id="benefits"
+        className="relative py-24 px-4 lg:px-8 bg-muted/40 scroll-mt-36"
+      >
         <div className="mx-auto max-w-6xl">
           <div className="space-y-8">
             <div className="text-center space-y-2">
@@ -172,7 +175,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-24 px-4 lg:px-8">
+      <section id="cta" className="relative py-24 px-4 lg:px-8 scroll-mt-36">
         <div className="mx-auto max-w-3xl">
           <Card className="border-2 border-primary/50 bg-gradient-to-br from-primary/5 to-accent/5 relative">
             <CardHeader className="text-center">
