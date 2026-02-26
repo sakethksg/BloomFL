@@ -1,0 +1,22 @@
+{
+  "status": "finished",
+  "progress_rounds": 20,
+  "total_rounds": 20,
+  "num_nodes": 3,
+  "wall_time_seconds": 302.68076670742545,
+  "error": null,
+  "result": {
+    "num_nodes": 3,
+    "rounds": 20,
+    "wall_time_seconds": 302.68076670742545,
+    "converged": true,
+    "convergence_stats": {
+      "convergence_round": 17,
+      "final_mean_accuracy": 0.8721,
+      "final_std_accuracy": 0.0118,
+      "total_bytes_mb": 47.3,
+      "gossip_success_rate": 0.921,
+      "mean_gossip_latency_ms": 24.7
+    }
+  }
+}

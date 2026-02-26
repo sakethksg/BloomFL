@@ -32,6 +32,55 @@ class SimulationService:
         self._stop_event = asyncio.Event()
         # Mutable list so the background thread can hand us the runner reference
         self._runner_ref: list = []
+        # Load persisted state from sidecar (written by seed_fake_data.py or a
+        # completed real run) so the API reflects the last known state after a
+        # server restart.
+        self._load_sidecar()
+
+    # ── Sidecar persistence ─────────────────────────────────────────────────
+
+    def _sidecar_path(self) -> Path:
+        try:
+            from api.dependencies import get_metrics_dir
+            return Path(get_metrics_dir()) / "_sim_state.json"
+        except Exception:
+            return Path("./metrics/_sim_state.json")
+
+    def _load_sidecar(self) -> None:
+        """Restore state from a previously saved sidecar (if present)."""
+        try:
+            sidecar = self._sidecar_path()
+            if not sidecar.exists():
+                return
+            data = _json.loads(sidecar.read_text())
+            self._status = data.get("status", "idle")
+            self._progress = data.get("progress_rounds", 0)
+            self._total = data.get("total_rounds", 0)
+            self._num_nodes = data.get("num_nodes", 0)
+            self._wall_time = data.get("wall_time_seconds")
+            self._error = data.get("error")
+            self._result = data.get("result")
+            logger.info("Loaded simulation state from sidecar: status=%s", self._status)
+        except Exception as exc:
+            logger.debug("Could not load sim sidecar: %s", exc)
+
+    def _save_sidecar(self) -> None:
+        """Persist current state to sidecar so it survives server restarts."""
+        try:
+            data = {
+                "status": self._status,
+                "progress_rounds": self._progress,
+                "total_rounds": self._total,
+                "num_nodes": self._num_nodes,
+                "wall_time_seconds": self._wall_time,
+                "error": self._error,
+                "result": self._result,
+            }
+            sidecar = self._sidecar_path()
+            sidecar.parent.mkdir(parents=True, exist_ok=True)
+            sidecar.write_text(_json.dumps(data, indent=2))
+        except Exception as exc:
+            logger.debug("Could not save sim sidecar: %s", exc)
 
     # ── Public API ─────────────────────────────────────────────────────────
 
@@ -150,6 +199,7 @@ class SimulationService:
                 "converged": result.converged,
                 "convergence_stats": result.convergence_stats,
             }
+            self._save_sidecar()
             await manager.broadcast("simulation", {
                 "event": "finished",
                 "round": req.rounds,
@@ -178,6 +228,7 @@ class SimulationService:
         except Exception as exc:
             self._status = "error"
             self._error = str(exc)
+            self._save_sidecar()
             logger.exception("Simulation error: %s", exc)
             try:
                 await manager.broadcast("simulation", {
