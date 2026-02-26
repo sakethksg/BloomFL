@@ -58,6 +58,7 @@ export default function ConvergencePage() {
 
   if (loading) return <Skeleton className="h-96 w-full" />;
 
+  const hasData = chartData.length > 0;
   const convergenceRound = summary?.convergence_round;
   const finalAcc = summary?.final_mean_accuracy;
   const finalStd = summary?.final_std_accuracy;
@@ -112,6 +113,11 @@ export default function ConvergencePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {!hasData ? (
+            <div className="flex items-center justify-center h-80 text-muted-foreground text-sm">
+              No convergence data available yet
+            </div>
+          ) : (
           <ResponsiveContainer width="100%" height={320}>
             <ComposedChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -191,6 +197,7 @@ export default function ConvergencePage() {
               )}
             </ComposedChart>
           </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -202,6 +209,11 @@ export default function ConvergencePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {!hasData ? (
+            <div className="flex items-center justify-center h-44 text-muted-foreground text-sm">
+              No standard deviation data available yet
+            </div>
+          ) : (
           <ResponsiveContainer width="100%" height={180}>
             <ComposedChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -225,6 +237,7 @@ export default function ConvergencePage() {
               )}
             </ComposedChart>
           </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -234,6 +247,11 @@ export default function ConvergencePage() {
           <CardTitle className="text-sm">Gossip Success Rate (%)</CardTitle>
         </CardHeader>
         <CardContent>
+          {!hasData ? (
+            <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
+              No gossip data available yet
+            </div>
+          ) : (
           <ResponsiveContainer width="100%" height={160}>
             <ComposedChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -249,6 +267,7 @@ export default function ConvergencePage() {
               />
             </ComposedChart>
           </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
     </div>

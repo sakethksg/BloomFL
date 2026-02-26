@@ -154,6 +154,11 @@ export default function MetricsPage() {
           <CardTitle className="text-sm">Eval Loss per Node</CardTitle>
         </CardHeader>
         <CardContent>
+          {lossData.length === 0 ? (
+            <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
+              No loss data available yet
+            </div>
+          ) : (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={lossData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -174,6 +179,7 @@ export default function MetricsPage() {
               ))}
             </LineChart>
           </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -183,6 +189,11 @@ export default function MetricsPage() {
           <CardTitle className="text-sm">Eval Accuracy (%) per Node</CardTitle>
         </CardHeader>
         <CardContent>
+          {accData.length === 0 ? (
+            <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
+              No accuracy data available yet
+            </div>
+          ) : (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={accData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -203,6 +214,7 @@ export default function MetricsPage() {
               ))}
             </LineChart>
           </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 

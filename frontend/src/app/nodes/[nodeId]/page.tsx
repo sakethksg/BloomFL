@@ -167,6 +167,11 @@ export default function NodeDetailPage() {
               <CardTitle className="text-sm">Loss over Rounds</CardTitle>
             </CardHeader>
             <CardContent>
+              {trainingData.length === 0 ? (
+                <div className="flex items-center justify-center h-60 text-muted-foreground text-sm">
+                  No training data available yet
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={trainingData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -178,6 +183,7 @@ export default function NodeDetailPage() {
                   <Line type="monotone" dataKey="eval_loss" stroke="#f59e0b" dot={false} name="Eval Loss" />
                 </LineChart>
               </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -185,6 +191,11 @@ export default function NodeDetailPage() {
               <CardTitle className="text-sm">Eval Accuracy (%) over Rounds</CardTitle>
             </CardHeader>
             <CardContent>
+              {trainingData.length === 0 ? (
+                <div className="flex items-center justify-center h-60 text-muted-foreground text-sm">
+                  No training data available yet
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={trainingData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -194,6 +205,7 @@ export default function NodeDetailPage() {
                   <Line type="monotone" dataKey="eval_accuracy" stroke="#10b981" dot={false} name="Accuracy" />
                 </LineChart>
               </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -203,6 +215,11 @@ export default function NodeDetailPage() {
           <Card>
             <CardHeader><CardTitle className="text-sm">Gossip Latency (ms)</CardTitle></CardHeader>
             <CardContent>
+              {gossipData.length === 0 ? (
+                <div className="flex items-center justify-center h-56 text-muted-foreground text-sm">
+                  No gossip data available yet
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={gossipData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -212,11 +229,17 @@ export default function NodeDetailPage() {
                   <Bar dataKey="latency_ms" fill="#6366f1" name="Latency ms" />
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
           <Card>
             <CardHeader><CardTitle className="text-sm">Bytes Exchanged (KB)</CardTitle></CardHeader>
             <CardContent>
+              {gossipData.length === 0 ? (
+                <div className="flex items-center justify-center h-44 text-muted-foreground text-sm">
+                  No gossip data available yet
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={gossipData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -226,6 +249,7 @@ export default function NodeDetailPage() {
                   <Bar dataKey="bytes_kb" fill="#10b981" name="KB" />
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -235,6 +259,11 @@ export default function NodeDetailPage() {
           <Card>
             <CardHeader><CardTitle className="text-sm">Training Epochs per Round (throttle activity)</CardTitle></CardHeader>
             <CardContent>
+              {adaptData.length === 0 ? (
+                <div className="flex items-center justify-center h-56 text-muted-foreground text-sm">
+                  No adaptation data available yet
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={adaptData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -244,11 +273,17 @@ export default function NodeDetailPage() {
                   <Bar dataKey="train_epochs" fill="#f59e0b" name="Epochs" />
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
           <Card>
             <CardHeader><CardTitle className="text-sm">Gossip Enabled (1=yes, 0=throttled)</CardTitle></CardHeader>
             <CardContent>
+              {adaptData.length === 0 ? (
+                <div className="flex items-center justify-center h-28 text-muted-foreground text-sm">
+                  No adaptation data available yet
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height={120}>
                 <BarChart data={adaptData}>
                   <XAxis dataKey="round" tick={{ fontSize: 11 }} />
@@ -257,6 +292,7 @@ export default function NodeDetailPage() {
                   <Bar dataKey="gossip" fill="#6366f1" name="Gossip" />
                 </BarChart>
               </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
