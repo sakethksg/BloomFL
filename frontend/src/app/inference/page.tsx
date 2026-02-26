@@ -35,16 +35,18 @@ import {
 
 function ConfSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
-    <div className="flex items-center gap-3">
-      <label className="text-sm font-medium text-muted-foreground w-36 shrink-0">
-        Confidence threshold
-      </label>
+    <div className="w-full space-y-3">
+      <label className="text-sm font-semibold text-foreground">Confidence Threshold: {(value * 100).toFixed(0)}%</label>
       <input
         type="range" min={0.01} max={1} step={0.01} value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="flex-1"
+        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
       />
-      <span className="text-sm font-mono w-10 text-right">{(value * 100).toFixed(0)}%</span>
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>1%</span>
+        <span className="font-mono">{(value * 100).toFixed(0)}%</span>
+        <span>100%</span>
+      </div>
     </div>
   );
 }
@@ -72,15 +74,17 @@ function DropZone({ onFile, disabled }: { onFile: (f: File) => void; disabled?: 
       onDrop={handleDrop}
       onClick={() => !disabled && inputRef.current?.click()}
       className={[
-        "flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 transition-colors cursor-pointer select-none",
-        dragging ? "border-primary bg-primary/5" : "border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/30",
-        disabled ? "opacity-50 cursor-not-allowed" : "",
+        "flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-12 transition-all cursor-pointer select-none hover:scale-105 duration-300",
+        dragging ? "border-primary bg-primary/10 scale-105" : "border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/50",
+        disabled ? "opacity-50 cursor-not-allowed hover:scale-100" : "",
       ].join(" ")}
     >
-      <IconUpload className="size-8 text-muted-foreground" />
+      <div className="rounded-full bg-primary/10 p-4">
+        <IconUpload className="size-8 text-primary" />
+      </div>
       <div className="text-center">
-        <p className="text-sm font-medium">Drop an image here or click to browse</p>
-        <p className="text-xs text-muted-foreground mt-1">JPEG · PNG · WebP · BMP</p>
+        <p className="text-base font-semibold text-foreground">Drop an image here or click to browse</p>
+        <p className="text-sm text-muted-foreground mt-1.5">Supported formats: JPEG · PNG · WebP · BMP</p>
       </div>
       <input
         ref={inputRef} type="file" accept="image/*" className="hidden"
@@ -94,28 +98,30 @@ function DropZone({ onFile, disabled }: { onFile: (f: File) => void; disabled?: 
 
 function NodeResultCard({ result }: { result: NodeDetectionResult }) {
   const hasBadge = result.error
-    ? <Badge variant="destructive">Error</Badge>
+    ? <Badge variant="destructive" className="text-xs">Error</Badge>
     : result.person_count > 0
-    ? <Badge className="bg-green-600">{result.person_count} person{result.person_count !== 1 ? "s" : ""}</Badge>
-    : <Badge variant="secondary">No persons</Badge>;
+    ? <Badge className="bg-green-600 text-white text-xs">{result.person_count} person{result.person_count !== 1 ? "s" : ""}</Badge>
+    : <Badge variant="secondary" className="text-xs">No persons</Badge>;
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <CardTitle className="text-sm font-mono">{result.node_label}</CardTitle>
-          <div className="flex items-center gap-2">
+    <Card className="overflow-hidden flex flex-col border-2 hover:shadow-lg transition-shadow">
+      <CardHeader className="pb-3 border-b bg-muted/40">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-sm font-mono font-bold truncate">{result.node_label}</CardTitle>
+            <CardDescription className="truncate text-xs mt-1">{result.model_path}</CardDescription>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
             {hasBadge}
-            <span className="text-xs text-muted-foreground font-mono">
+            <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded">
               {result.inference_time_ms.toFixed(1)} ms
             </span>
           </div>
         </div>
-        <CardDescription className="truncate text-xs">{result.model_path}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3 pt-0">
+      <CardContent className="space-y-3 pt-4 flex-1 flex flex-col">
         {result.error ? (
-          <div className="rounded bg-destructive/10 p-2 text-xs text-destructive">{result.error}</div>
+          <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive font-medium">{result.error}</div>
         ) : (
           <>
             {result.annotated_jpeg_b64 && (
@@ -123,28 +129,28 @@ function NodeResultCard({ result }: { result: NodeDetectionResult }) {
               <img
                 src={`data:image/jpeg;base64,${result.annotated_jpeg_b64}`}
                 alt={`Detection result for ${result.node_label}`}
-                className="w-full rounded-md object-contain max-h-56"
+                className="w-full rounded-lg object-contain max-h-56"
               />
             )}
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-muted-foreground font-medium">
               {result.boxes.length} object{result.boxes.length !== 1 ? "s" : ""} detected
             </div>
             {result.boxes.length > 0 && (
-              <div className="rounded-md border overflow-auto max-h-36">
-                <Table>
+              <div className="rounded-lg border overflow-auto max-h-40 flex-1">
+                <Table className="text-xs">
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Class</TableHead>
-                      <TableHead>Conf</TableHead>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="text-xs font-bold">Class</TableHead>
+                      <TableHead className="text-xs font-bold text-right">Conf</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {result.boxes.map((box, i) => (
-                      <TableRow key={i} className={box.class_id === 0 ? "bg-green-500/5" : ""}>
+                      <TableRow key={i} className={box.class_id === 0 ? "bg-green-500/10 hover:bg-green-500/20" : "hover:bg-muted"}>
                         <TableCell className={box.class_id === 0 ? "font-semibold text-green-600 dark:text-green-400 text-xs" : "text-muted-foreground text-xs"}>
                           {box.class_name}
                         </TableCell>
-                        <TableCell className="font-mono text-xs">{(box.conf * 100).toFixed(1)}%</TableCell>
+                        <TableCell className="font-mono text-xs text-right">{(box.conf * 100).toFixed(1)}%</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -321,54 +327,62 @@ export default function InferencePage() {
   const hasResults = originalSrc != null;
 
   return (
-    <div className="space-y-6 px-4 lg:px-6 py-6">
+    <div className="w-full">
+      <div className="mx-auto max-w-4xl px-4 lg:px-6 py-6 pb-12 space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-            <IconScan className="size-6" /> YOLO Detection
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Upload an image to run person detection and compare results across node checkpoints.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {!modelLoaded && (
-            <Badge variant="destructive" className="flex items-center gap-1">
-              <IconAlertTriangle className="size-3" /> Model not loaded
-            </Badge>
-          )}
-          {modelLoaded && <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-600"><IconCircleCheck className="size-3" /> Model ready</Badge>}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2 mb-2">
+              <IconScan className="size-7" /> YOLO Detection
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Upload an image to run person detection and compare results across node checkpoints.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {!modelLoaded && (
+              <Badge variant="destructive" className="flex items-center gap-1 whitespace-nowrap">
+                <IconAlertTriangle className="size-3" /> Model not loaded
+              </Badge>
+            )}
+            {modelLoaded && <Badge variant="outline" className="flex items-center gap-1 border-green-500 text-green-600 whitespace-nowrap"><IconCircleCheck className="size-3" /> Model ready</Badge>}
+          </div>
         </div>
       </div>
 
       {/* Mode toggle + settings */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-1 rounded-lg border p-1">
+      <Card className="border-2">
+        <CardHeader className="pb-6">
+          <div className="space-y-4">
+            {/* Mode toggle */}
+            <div className="flex gap-2 p-1 rounded-lg border bg-muted/40">
               <button
                 onClick={() => setMultiMode(false)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${!multiMode ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                className={`flex-1 px-3 py-2 rounded-md text-sm font-semibold transition-all whitespace-nowrap ${!multiMode ? "bg-white dark:bg-slate-950 text-primary shadow-sm border border-primary/20" : "text-muted-foreground hover:text-foreground"}`}
               >
-                Single checkpoint
+                Single
               </button>
               <button
                 onClick={() => setMultiMode(true)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${multiMode ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                className={`flex-1 px-3 py-2 rounded-md text-sm font-semibold transition-all whitespace-nowrap ${multiMode ? "bg-white dark:bg-slate-950 text-primary shadow-sm border border-primary/20" : "text-muted-foreground hover:text-foreground"}`}
               >
-                Compare all nodes
+                Compare All
               </button>
             </div>
-            <ConfSlider value={conf} onChange={setConf} />
+            
+            {/* Confidence slider */}
+            <div>
+              <ConfSlider value={conf} onChange={setConf} />
+            </div>
           </div>
         </CardHeader>
         {multiMode && (
-          <CardContent className="pt-0 space-y-2">
+          <CardContent className="pt-0 space-y-4 border-t">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Checkpoints to compare</p>
-              <Button variant="ghost" size="sm" onClick={refreshCheckpoints} className="gap-1.5 h-7 text-xs">
-                <IconRefresh className="size-3" /> Refresh
+              <p className="text-sm font-semibold">Checkpoints to Compare</p>
+              <Button variant="ghost" size="sm" onClick={refreshCheckpoints} className="gap-1.5 h-8 text-xs">
+                <IconRefresh className="size-3.5" /> Refresh
               </Button>
             </div>
             <CardDescription className="text-xs">
@@ -387,8 +401,9 @@ export default function InferencePage() {
 
       {/* Error */}
       {error && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive flex items-start gap-2">
-          <IconAlertTriangle className="size-4 mt-0.5 shrink-0" /> {error}
+        <div className="rounded-lg border-l-4 border-l-destructive bg-destructive/10 p-4 text-sm text-destructive flex items-start gap-3">
+          <IconAlertTriangle className="size-5 mt-0.5 shrink-0 flex-none" />
+          <p className="font-medium">{error}</p>
         </div>
       )}
 
@@ -397,38 +412,42 @@ export default function InferencePage() {
 
       {/* Results */}
       {hasResults && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium">Results</h2>
-            <Button variant="ghost" size="sm" onClick={handleClear} className="gap-1.5">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold">Detection Results</h2>
+              <p className="text-sm text-muted-foreground mt-1">Results from {multiMode ? 'selected nodes' : 'single checkpoint'}</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleClear} className="gap-1.5 h-9">
               <IconX className="size-4" /> Clear
             </Button>
           </div>
 
           {/* ── Single mode ── */}
           {!multiMode && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-wide">Original</CardTitle>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Card className="flex flex-col overflow-hidden border-2">
+                <CardHeader className="pb-3 border-b">
+                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Original Image</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex items-center justify-center pt-6">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={originalSrc!} alt="Original" className="w-full rounded-md object-contain max-h-96" />
+                  <img src={originalSrc!} alt="Original" className="w-full rounded-lg object-contain max-h-96" />
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-wide">Annotated</CardTitle>
+              <Card className="flex flex-col overflow-hidden border-2">
+                <CardHeader className="pb-3 border-b">
+                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Detection Results</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex items-center justify-center pt-6">
                   {loading ? (
-                    <div className="flex h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
-                      <IconLoader2 className="size-5 animate-spin" /> Running inference…
+                    <div className="flex h-64 items-center justify-center gap-3 flex-col text-muted-foreground">
+                      <IconLoader2 className="size-8 animate-spin text-primary" />
+                      <p className="text-sm font-medium">Running inference…</p>
                     </div>
                   ) : annotatedSrc ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={annotatedSrc} alt="Annotated" className="w-full rounded-md object-contain max-h-96" />
+                    <img src={annotatedSrc} alt="Annotated" className="w-full rounded-lg object-contain max-h-96" />
                   ) : null}
                 </CardContent>
               </Card>
@@ -437,50 +456,52 @@ export default function InferencePage() {
 
           {/* ── Multi-node mode ── */}
           {multiMode && (
-            <>
+            <div className="space-y-6">
               {/* Original image */}
-              <Card className="sm:max-w-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-wide">Input image</CardTitle>
+              <Card className="lg:max-w-md border-2 overflow-hidden">
+                <CardHeader className="pb-3 border-b">
+                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Input Image</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={originalSrc!} alt="Input" className="w-full rounded-md object-contain max-h-64" />
+                  <img src={originalSrc!} alt="Input" className="w-full rounded-lg object-contain max-h-72" />
                 </CardContent>
               </Card>
 
               {/* Node result grid */}
               {loading ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground py-6">
-                  <IconLoader2 className="size-5 animate-spin" />
-                  Running inference across {selectedCkpts.size} node checkpoint{selectedCkpts.size !== 1 ? "s" : ""}…
+                <div className="flex items-center gap-3 text-muted-foreground py-12 justify-center">
+                  <IconLoader2 className="size-6 animate-spin text-primary" />
+                  <p className="text-sm font-medium">Running inference across {selectedCkpts.size} checkpoint{selectedCkpts.size !== 1 ? "s" : ""}…</p>
                 </div>
               ) : multiResults.length > 0 ? (
-                <>
-                  <div className="flex items-center gap-3">
-                    <p className="text-sm font-medium">{multiResults.length} node results</p>
-                    <Badge variant="outline">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold">{multiResults.length} Node Results</h3>
+                    </div>
+                    <Badge variant="outline" className="text-base px-3 py-1">
                       {multiResults.reduce((s, r) => s + r.person_count, 0)} total persons detected
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {multiResults.map((r, i) => (
                       <NodeResultCard key={i} result={r} />
                     ))}
                   </div>
-                </>
+                </div>
               ) : null}
-            </>
+            </div>
           )}
 
           {/* Upload another */}
-          <Card>
-            <CardContent className="pt-4">
-              <DropZone onFile={handleFile} disabled={!modelLoaded} />
-            </CardContent>
-          </Card>
+          <div className="pt-4">
+            <h3 className="text-sm font-semibold mb-4">Upload Another Image</h3>
+            <DropZone onFile={handleFile} disabled={!modelLoaded} />
+          </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

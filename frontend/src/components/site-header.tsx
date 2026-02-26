@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { useWebSocket } from "@/hooks/useWebSocket"
 
 const PAGE_TITLES: Record<string, string> = {
+  "/dashboard": "Dashboard",
   "/": "Dashboard",
   "/nodes": "Nodes",
   "/metrics": "Training Metrics",

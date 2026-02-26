@@ -72,11 +72,11 @@ export function ChartAreaInteractive() {
   }))
 
   return (
-    <Card className="@container/card">
-      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+    <Card className="@container/card border-2">
+      <CardHeader className="flex items-center gap-4 space-y-0 border-b py-6 sm:flex-row">
         <div className="grid flex-1 gap-1">
-          <CardTitle>Training Progress</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold">Training Progress</CardTitle>
+          <CardDescription className="text-sm">
             Mean accuracy &amp; loss across all nodes per round
           </CardDescription>
         </div>
@@ -87,13 +87,13 @@ export function ChartAreaInteractive() {
           variant="outline"
           className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]:flex"
         >
-          <ToggleGroupItem value="10">10R</ToggleGroupItem>
-          <ToggleGroupItem value="30">30R</ToggleGroupItem>
-          <ToggleGroupItem value="all">All</ToggleGroupItem>
+          <ToggleGroupItem value="10" className="text-xs font-semibold">10R</ToggleGroupItem>
+          <ToggleGroupItem value="30" className="text-xs font-semibold">30R</ToggleGroupItem>
+          <ToggleGroupItem value="all" className="text-xs font-semibold">All</ToggleGroupItem>
         </ToggleGroup>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger
-            className="flex w-40 @[767px]:hidden"
+            className="flex w-40 @[767px]:hidden text-sm"
             aria-label="Select range"
           >
             <SelectValue placeholder="All rounds" />
@@ -105,9 +105,9 @@ export function ChartAreaInteractive() {
           </SelectContent>
         </Select>
       </CardHeader>
-      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+      <CardContent className="px-2 pt-6 sm:px-6 sm:pt-6">
         {chartData.length === 0 ? (
-          <div className="flex h-[250px] items-center justify-center">
+          <div className="flex h-[300px] items-center justify-center">
             <div className="flex flex-col items-center justify-center border-2 border-dashed border-muted rounded-lg p-8 max-w-md">
               <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-4">
                 <path d="M3 3v18h18"/>
@@ -120,7 +120,7 @@ export function ChartAreaInteractive() {
         ) : (
           <ChartContainer
             config={chartConfig}
-            className="aspect-auto h-[250px] w-full"
+            className="aspect-auto h-[300px] w-full"
           >
             <AreaChart data={chartData}>
               <defs>
@@ -140,9 +140,10 @@ export function ChartAreaInteractive() {
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={24}
+                className="text-xs"
               />
-              <YAxis yAxisId="acc" domain={[0, 100]} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} width={40} />
-              <YAxis yAxisId="loss" orientation="right" tickLine={false} axisLine={false} width={55} />
+              <YAxis yAxisId="acc" domain={[0, 100]} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} width={40} className="text-xs" />
+              <YAxis yAxisId="loss" orientation="right" tickLine={false} axisLine={false} width={55} className="text-xs" />
               <ChartTooltip
                 cursor={false}
                 content={

@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   LineChart,
   Line,
@@ -29,7 +31,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Button } from "@/components/ui/button";
+import { IconChartLine } from "@tabler/icons-react";
 
 const COLORS = [
   "#6366f1", "#10b981", "#f59e0b", "#ef4444", "#3b82f6",
@@ -101,18 +103,22 @@ export default function MetricsPage() {
       : null,
   }));
 
-  if (loading) return <Skeleton className="h-96 w-full" />;
+  if (loading) return <Skeleton className="h-96 w-full mx-4 lg:mx-6 mt-6" />;
 
   return (
     <div className="space-y-6 px-4 lg:px-6 py-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Per-node training/evaluation metrics across rounds
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <IconChartLine className="size-7 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight">Training Metrics</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Monitor per-node training and evaluation metrics across all rounds. Compare accuracy and loss across different nodes.
           </p>
         </div>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" asChild className="shrink-0">
           <a href={api.metrics.exportUrl()} download>
             Export JSON
           </a>
@@ -121,123 +127,148 @@ export default function MetricsPage() {
 
       {/* Node filter */}
       {nodeIds.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-muted-foreground">Show nodes:</span>
-          {nodeIds.map((id, idx) => (
-            <button
-              key={id}
-              onClick={() =>
-                setSelectedNodes((prev) =>
-                  prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-                )
-              }
-              className="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs border transition-opacity"
-              style={{
-                borderColor: COLORS[idx % COLORS.length],
-                color: COLORS[idx % COLORS.length],
-                opacity: selectedNodes.includes(id) ? 1 : 0.35,
-              }}
-            >
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ background: COLORS[idx % COLORS.length] }}
-              />
-              {id}
-            </button>
-          ))}
-        </div>
+        <Card className="border-2 bg-muted/20">
+          <CardHeader className="pb-4">
+            <div className="space-y-3">
+              <h3 className="font-bold text-sm">Filter Nodes</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                {nodeIds.map((id, idx) => (
+                  <button
+                    key={id}
+                    onClick={() =>
+                      setSelectedNodes((prev) =>
+                        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                      )
+                    }
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all hover:shadow-md"
+                    style={{
+                      borderColor: COLORS[idx % COLORS.length],
+                      backgroundColor: selectedNodes.includes(id)
+                        ? COLORS[idx % COLORS.length] + "20"
+                        : "transparent",
+                      color: COLORS[idx % COLORS.length],
+                      opacity: selectedNodes.includes(id) ? 1 : 0.5,
+                    }}
+                  >
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ background: COLORS[idx % COLORS.length] }}
+                    />
+                    {id.slice(-8)}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {selectedNodes.length} of {nodeIds.length} nodes selected
+              </p>
+            </div>
+          </CardHeader>
+        </Card>
       )}
 
-      {/* Loss chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Eval Loss per Node</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {lossData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-muted rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
-                <path d="M3 3v18h18"/>
-                <path d="m19 9-5 5-4-4-3 3"/>
-              </svg>
-              <p className="text-sm font-medium text-muted-foreground">No loss data available yet</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Start a simulation to see metrics</p>
-            </div>
-          ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={lossData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="round" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Legend />
-              {selectedNodes.map((id, idx) => (
-                <Line
-                  key={id}
-                  type="monotone"
-                  dataKey={id}
-                  stroke={COLORS[idx % COLORS.length]}
-                  dot={false}
-                  name={id}
-                  connectNulls
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Loss chart */}
+        <Card className="border-2 overflow-hidden">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <span className="inline-block w-3 h-3 rounded-full bg-orange-500"></span>
+              Validation Loss
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">Loss per node across training rounds</p>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {lossData.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-muted rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
+                  <path d="M3 3v18h18"/>
+                  <path d="m19 9-5 5-4-4-3 3"/>
+                </svg>
+                <p className="text-sm font-semibold text-muted-foreground">No loss data available yet</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">Start a simulation to view training metrics</p>
+              </div>
+            ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={lossData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="round" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Legend />
+                {selectedNodes.map((id, idx) => (
+                  <Line
+                    key={id}
+                    type="monotone"
+                    dataKey={id}
+                    stroke={COLORS[idx % COLORS.length]}
+                    dot={false}
+                    name={id}
+                    connectNulls
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Accuracy chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Eval Accuracy (%) per Node</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {accData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-muted rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
-                <path d="M3 3v18h18"/>
-                <path d="m19 9-5 5-4-4-3 3"/>
-              </svg>
-              <p className="text-sm font-medium text-muted-foreground">No accuracy data available yet</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Start a simulation to see metrics</p>
-            </div>
-          ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={accData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="round" tick={{ fontSize: 11 }} />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} unit="%" />
-              <Tooltip formatter={(v) => typeof v === "number" ? `${v.toFixed(1)}%` : "—"} />
-              <Legend />
-              {selectedNodes.map((id, idx) => (
-                <Line
-                  key={id}
-                  type="monotone"
-                  dataKey={id}
-                  stroke={COLORS[idx % COLORS.length]}
-                  dot={false}
-                  name={id}
-                  connectNulls
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
+        {/* Accuracy chart */}
+        <Card className="border-2 overflow-hidden">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <span className="inline-block w-3 h-3 rounded-full bg-green-500"></span>
+              Validation Accuracy
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">Accuracy percentage per node across training rounds</p>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {accData.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-muted rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-3">
+                  <path d="M3 3v18h18"/>
+                  <path d="m19 9-5 5-4-4-3 3"/>
+                </svg>
+                <p className="text-sm font-semibold text-muted-foreground">No accuracy data available yet</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">Start a simulation to view training metrics</p>
+              </div>
+            ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={accData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="round" tick={{ fontSize: 11 }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} unit="%" />
+                <Tooltip formatter={(v) => typeof v === "number" ? `${v.toFixed(1)}%` : "—"} />
+                <Legend />
+                {selectedNodes.map((id, idx) => (
+                  <Line
+                    key={id}
+                    type="monotone"
+                    dataKey={id}
+                    stroke={COLORS[idx % COLORS.length]}
+                    dot={false}
+                    name={id}
+                    connectNulls
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Mean ± std band */}
       {bandData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">
-              Mean Accuracy (%) ± Std across All Nodes
+        <Card className="border-2 overflow-hidden">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <span className="inline-block w-3 h-3 rounded-full bg-indigo-500"></span>
+              Aggregate Accuracy Trend
             </CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">Mean accuracy across all nodes with standard deviation band</p>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={220}>
+          <CardContent className="pt-6">
+            <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={bandData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="round" tick={{ fontSize: 11 }} />

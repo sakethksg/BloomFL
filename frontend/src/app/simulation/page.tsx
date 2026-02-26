@@ -37,8 +37,10 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { fmtPct } from "@/components/shared/NodeBadges";
+import { IconRocket } from "@tabler/icons-react";
 
 const schema = z.object({
   num_nodes: z.coerce.number().min(2).max(16),
@@ -136,20 +138,32 @@ export default function SimulationPage() {
 
   return (
     <div className="space-y-6 px-4 lg:px-6 py-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Simulation</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Launch and monitor a multi-node BloomFL simulation
-        </p>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <IconRocket className="size-7 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight">Simulation</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Launch and monitor a multi-node BloomFL simulation with configurable network conditions and convergence parameters.
+          </p>
+        </div>
+        {running && (
+          <Badge className="shrink-0 px-4 py-2 text-base font-bold bg-green-600 animate-pulse">
+            Running
+          </Badge>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Config form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Configuration</CardTitle>
+        <Card className="border-2">
+          <CardHeader className="pb-4 bg-muted/40 border-b">
+            <CardTitle className="text-lg font-bold">Configuration</CardTitle>
+            <CardDescription>Set simulation parameters</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -309,16 +323,17 @@ export default function SimulationPage() {
                 />
 
                 <div className="flex gap-2 pt-2">
-                  <Button type="submit" disabled={running} className="flex-1">
-                    {running ? "Running…" : "Start Simulation"}
+                  <Button type="submit" disabled={running} className="flex-1 font-semibold">
+                    {running ? "🚀 Running…" : "🚀 Start Simulation"}
                   </Button>
                   {running && (
                     <Button
                       type="button"
                       variant="destructive"
                       onClick={onStop}
+                      className="font-semibold"
                     >
-                      Stop
+                      ⏹ Stop
                     </Button>
                   )}
                 </div>
@@ -331,29 +346,44 @@ export default function SimulationPage() {
         <div className="space-y-4">
           {/* Progress */}
           {status && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">
+            <Card className="border-2 overflow-hidden">
+              <CardHeader className="pb-4 bg-muted/40 border-b">
+                <CardTitle className="text-base font-bold">
                   Status:{" "}
-                  <span className="capitalize font-normal">{status.status}</span>
+                  <Badge className="ml-2 capitalize">
+                    {status.status === "finished" ? "✓ Completed" : status.status}
+                  </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="pt-6 space-y-4">
                 {running && (
                   <>
-                    <Progress value={progress} />
-                    <p className="text-xs text-muted-foreground">
-                      Round {status.progress_rounds} / {status.total_rounds}
-                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-semibold">Progress</span>
+                        <span className="tabular-nums">{progress.toFixed(0)}%</span>
+                      </div>
+                      <Progress value={progress} className="h-3" />
+                      <p className="text-xs text-muted-foreground">
+                        Round {status.progress_rounds} / {status.total_rounds}
+                      </p>
+                    </div>
                   </>
                 )}
                 {status.status === "finished" && (
-                  <p className="text-xs text-muted-foreground">
-                    Completed in {status.wall_time_seconds?.toFixed(1)} s
-                  </p>
+                  <div className="space-y-2 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                      ✓ Simulation completed successfully
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Wall time: {status.wall_time_seconds?.toFixed(2)} seconds
+                    </p>
+                  </div>
                 )}
                 {status.error && (
-                  <p className="text-xs text-destructive">{status.error}</p>
+                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <p className="text-xs text-destructive font-medium">{status.error}</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -361,41 +391,46 @@ export default function SimulationPage() {
 
           {/* Result summary */}
           {result && (
-            <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
-              <CardHeader>
-                <CardTitle className="text-sm text-green-700 dark:text-green-400">
-                  Simulation Complete
+            <Card className="border-2 border-green-500/50 overflow-hidden">
+              <CardHeader className="pb-4 bg-gradient-to-r from-green-500/10 to-transparent border-b border-green-500/30">
+                <CardTitle className="text-base font-bold text-green-700 dark:text-green-400 flex items-center gap-2">
+                  <span className="text-2xl">✓</span> Simulation Complete
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-1 text-sm">
-                <p>
-                  Converged:{" "}
-                  <strong>{result.converged ? "Yes ✓" : "No"}</strong>
-                </p>
-                <p>
-                  Wall time:{" "}
-                  <strong>{result.wall_time_seconds.toFixed(1)} s</strong>
-                </p>
-                {Object.entries(result.convergence_stats).map(([k, v]) => (
-                  <p key={k}>
-                    {k}: <strong>{String(v)}</strong>
-                  </p>
-                ))}
+              <CardContent className="pt-6 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 bg-muted/40 rounded-lg">
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">Converged</p>
+                    <p className="text-lg font-bold">{result.converged ? "✓ Yes" : "✗ No"}</p>
+                  </div>
+                  <div className="p-3 bg-muted/40 rounded-lg">
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">Duration</p>
+                    <p className="text-lg font-bold">{result.wall_time_seconds.toFixed(1)}s</p>
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm">
+                  {Object.entries(result.convergence_stats).map(([k, v]) => (
+                    <p key={k} className="flex justify-between">
+                      <span className="text-muted-foreground capitalize">{k.replace("_", " ")}:</span>
+                      <strong>{String(v)}</strong>
+                    </p>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}
 
           {/* Log feed */}
           {logs.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Event Log</CardTitle>
+            <Card className="border-2 overflow-hidden">
+              <CardHeader className="pb-4 bg-muted/40 border-b">
+                <CardTitle className="text-base font-bold">Event Log</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <ScrollArea className="h-56 px-4 pb-4">
-                  <div className="font-mono text-xs space-y-0.5 mt-2">
+                <ScrollArea className="h-64 px-4 py-4">
+                  <div className="font-mono text-xs space-y-1">
                     {logs.map((l, i) => (
-                      <p key={i} className="text-muted-foreground">
+                      <p key={i} className="text-muted-foreground hover:text-foreground transition-colors">
                         {l}
                       </p>
                     ))}

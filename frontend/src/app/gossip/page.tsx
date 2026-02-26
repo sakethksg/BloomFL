@@ -14,7 +14,9 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { IconNetwork } from "@tabler/icons-react";
 
 interface GraphNode {
   id: string;
@@ -110,7 +112,7 @@ function GossipCanvas({
       ref={canvasRef}
       width={width}
       height={height}
-      className="rounded-lg bg-muted/30 w-full max-w-full"
+      className="rounded-xl bg-gradient-to-br from-muted/20 to-muted/40 w-full max-w-full border border-muted/50"
       style={{ maxHeight: height }}
     />
   );
@@ -198,108 +200,174 @@ export default function GossipPage() {
     return { graphNodes: gnodes, graphEdges: gedges };
   }, [allHistory, round]);
 
-  if (loading) return <Skeleton className="h-96 w-full" />;
+  if (loading) return <Skeleton className="h-96 w-full mx-4 lg:mx-6 mt-6" />;
 
   return (
     <div className="space-y-6 px-4 lg:px-6 py-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Gossip Graph</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Who exchanged with whom — green edges = success, red = failure, thickness = bytes
-        </p>
-      </div>
-
-      <div className="flex items-center gap-6 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Switch
-            id="live"
-            checked={liveMode}
-            onCheckedChange={(v) => {
-              setLiveMode(v);
-              if (v) setRound(maxRound);
-            }}
-          />
-          <Label htmlFor="live">Live mode</Label>
-        </div>
-
-        {!liveMode && (
-          <div className="flex items-center gap-3 flex-1 max-w-sm">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              Round:
-            </span>
-            <Slider
-              min={0}
-              max={maxRound}
-              step={1}
-              value={[round]}
-              onValueChange={([v]) => setRound(v)}
-              className="flex-1"
-            />
-            <span className="text-xs font-mono w-8">{round}</span>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <IconNetwork className="size-7 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight">Gossip Graph</h1>
           </div>
-        )}
-
-        {liveMode && (
-          <span className="text-xs text-muted-foreground">Showing round {round}</span>
-        )}
+          <p className="text-sm text-muted-foreground">
+            Visualize peer-to-peer model exchanges across the network — green edges indicate successful transfers, red indicates failures. Edge thickness represents data volume.
+          </p>
+        </div>
+        <Badge variant="outline" className="shrink-0 text-xs font-semibold px-3 py-1.5">
+          Round {round}
+        </Badge>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">
-            Gossip Topology — Round {round}
-          </CardTitle>
-          <CardDescription>
-            {graphNodes.length} nodes · {graphEdges.length} exchanges
-          </CardDescription>
+      {/* Controls */}
+      <Card className="border-2">
+        <CardHeader className="pb-4">
+          <div className="space-y-4">
+            {/* Live Mode Toggle */}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <Switch
+                id="live"
+                checked={liveMode}
+                onCheckedChange={(v) => {
+                  setLiveMode(v);
+                  if (v) setRound(maxRound);
+                }}
+                className="data-[state=checked]:bg-green-500"
+              />
+              <Label htmlFor="live" className="flex-1 font-semibold cursor-pointer">
+                {liveMode ? "🟢 Live Mode Active" : "Playback Mode"}
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                {liveMode ? "Showing latest" : "Manual round selection"}
+              </span>
+            </div>
+
+            {/* Round Slider */}
+            {!liveMode && (
+              <div className="flex items-center gap-4">
+                <Label className="text-sm font-semibold shrink-0">Select Round:</Label>
+                <Slider
+                  min={0}
+                  max={maxRound}
+                  step={1}
+                  value={[round]}
+                  onValueChange={([v]) => setRound(v)}
+                  className="flex-1"
+                />
+                <div className="text-right space-y-1">
+                  <div className="text-lg font-bold tabular-nums">R{round}</div>
+                  <span className="text-xs text-muted-foreground">of R{maxRound}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </CardHeader>
-        <CardContent className="overflow-hidden">
+      </Card>
+
+      {/* Graph Visualization */}
+      <Card className="border-2 overflow-hidden">
+        <CardHeader className="pb-4 bg-muted/40 border-b">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl font-bold flex items-center gap-2">
+                <span className="inline-block w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-emerald-500"></span>
+                Network Topology
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {graphNodes.length} active nodes · {graphEdges.length} exchanges in round {round}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="overflow-hidden pt-4">
           {graphNodes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-4">
-                <circle cx="18" cy="18" r="3"/>
-                <circle cx="6" cy="6" r="3"/>
-                <circle cx="13" cy="13" r="3"/>
-                <path d="M6 21V9a9 9 0 0 0 9 9"/>
-              </svg>
-              <p className="text-base font-medium text-muted-foreground mb-1">No gossip data for round {round}</p>
-              <p className="text-sm text-muted-foreground/60">Nodes haven't exchanged models yet</p>
+            <div className="flex flex-col items-center justify-center py-20 px-4">
+              <div className="rounded-full bg-muted/50 p-4 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40">
+                  <circle cx="18" cy="18" r="3"/>
+                  <circle cx="6" cy="6" r="3"/>
+                  <circle cx="13" cy="13" r="3"/>
+                  <path d="M6 21V9a9 9 0 0 0 9 9"/>
+                </svg>
+              </div>
+              <p className="text-lg font-semibold text-muted-foreground mb-2">No gossip data for round {round}</p>
+              <p className="text-sm text-muted-foreground/70 max-w-md text-center">Nodes haven't exchanged models yet in this round. Start a simulation to see peer-to-peer exchanges.</p>
             </div>
           ) : (
-            <GossipCanvas nodes={graphNodes} edges={graphEdges} />
+            <div className="space-y-4">
+              <GossipCanvas nodes={graphNodes} edges={graphEdges} />
+              <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground pt-2 border-t">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-1 bg-green-500 rounded"></div>
+                  <span>Successful</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-1 bg-red-500 rounded"></div>
+                  <span>Failed</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                  <span>Node (size = peer count)</span>
+                </div>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Edge table */}
+      {/* Exchanges Table */}
       {graphEdges.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Exchanges — Round {round}</CardTitle>
+        <Card className="border-2 overflow-hidden">
+          <CardHeader className="pb-4 bg-muted/40 border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-bold">Exchange Details</CardTitle>
+                <CardDescription className="mt-1">{graphEdges.length} peer-to-peer exchanges</CardDescription>
+              </div>
+              <Badge variant="secondary" className="font-semibold">{graphEdges.filter(e => e.success).length} successful</Badge>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-sm space-y-1">
-              {graphEdges.map((e, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 py-1 border-b last:border-0"
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      e.success ? "bg-green-500" : "bg-red-500"
-                    }`}
-                  />
-                  <span className="font-mono text-xs truncate flex-1">
-                    {e.source} → {e.target}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {e.latency.toFixed(1)} ms
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {(e.bytes / 1024).toFixed(1)} KB
-                  </span>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <div className="space-y-0 min-w-full">
+                <div className="grid grid-cols-5 gap-4 px-4 py-3 font-semibold text-xs bg-muted/50 rounded-lg sticky top-0 mb-2">
+                  <div>Status</div>
+                  <div>Source → Target</div>
+                  <div className="text-right">Latency</div>
+                  <div className="text-right">Data</div>
+                  <div className="text-right">Round</div>
                 </div>
-              ))}
+                {graphEdges.map((e, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-5 gap-4 px-4 py-3 border-b last:border-0 hover:bg-muted/30 transition-colors text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                          e.success ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      />
+                      <span className="text-xs font-semibold">{e.success ? "✓" : "✗"}</span>
+                    </div>
+                    <div className="font-mono text-xs truncate text-muted-foreground">
+                      <span className="text-foreground font-semibold">{e.source.slice(-4)}</span>
+                      <span> → </span>
+                      <span className="text-foreground font-semibold">{e.target.slice(-4)}</span>
+                    </div>
+                    <div className="text-right text-xs">
+                      <span className="font-mono">{e.latency.toFixed(1)}</span>
+                      <span className="text-muted-foreground"> ms</span>
+                    </div>
+                    <div className="text-right text-xs">
+                      <span className="font-semibold">{(e.bytes / 1024).toFixed(1)}</span>
+                      <span className="text-muted-foreground"> KB</span>
+                    </div>
+                    <div className="text-right text-xs font-mono">R{e.round}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>

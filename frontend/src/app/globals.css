@@ -172,11 +172,71 @@
     @apply bg-background text-foreground;
   }
 }
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+
+/* Enhanced styling for better UI appearance */
+@layer components {
+  /* Cards with enhanced shadows and borders */
+  [class*="Card"] {
+    @apply transition-all duration-200;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  /* Better form input styling */
+  input[type="range"] {
+    accent-color: var(--primary);
+  }
+
+  /* Enhanced button styling */
+  button {
+    @apply transition-all duration-200;
+  }
+
+  /* Improved table styling */
+  table {
+    @apply w-full;
+  }
+
+  table tr {
+    @apply border-b border-border/50 hover:bg-muted/50 transition-colors;
+  }
+
+  table tr:last-child {
+    @apply border-b-0;
+  }
+
+  /* Badge enhancements */
+  [class*="badge"] {
+    @apply transition-all duration-150;
+  }
+
+  /* Smooth scrollbar for image previews */
+  img {
+    @apply transition-transform duration-200 hover:scale-100;
+  }
+
+  /* Input field improvements */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    @apply transition-all duration-150 focus:shadow-md;
+  }
+}
+
+/* Animation for loading states */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .animate-fade-in-up {
+    animation: fade-in-up 0.3s ease-out;
   }
 }

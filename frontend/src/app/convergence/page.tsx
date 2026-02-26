@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
   ComposedChart,
   Line,
@@ -23,6 +24,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { fmtPct } from "@/components/shared/NodeBadges";
+import { IconTrendingUp } from "@tabler/icons-react";
 
 export default function ConvergencePage() {
   const [perRound, setPerRound] = useState<RoundStats[]>([]);
@@ -84,35 +86,50 @@ export default function ConvergencePage() {
 
   return (
     <div className="space-y-6 px-4 lg:px-6 py-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Convergence</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Mean ± std accuracy across nodes over rounds — convergence when std drops and mean exceeds 50%
-        </p>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <IconTrendingUp className="size-7 text-primary" />
+            <h1 className="text-3xl font-bold tracking-tight">Convergence Analysis</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Track model accuracy across all nodes over training rounds. Convergence occurs when mean accuracy peaks and standard deviation drops below target threshold.
+          </p>
+        </div>
+        {convergenceRound && (
+          <Badge className="shrink-0 px-4 py-2 text-base font-bold bg-green-600">
+            Converged at R{convergenceRound}
+          </Badge>
+        )}
       </div>
 
       {/* Summary KPIs */}
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((c) => (
-          <Card key={c.label}>
-            <CardHeader className="pb-1">
-              <p className="text-xs text-muted-foreground">{c.label}</p>
+          <Card key={c.label} className="border-2 hover:border-primary/50 transition-colors overflow-hidden">
+            <CardHeader className="pb-4 bg-gradient-to-br from-primary/5 to-transparent">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{c.label}</p>
             </CardHeader>
-            <CardContent>
-              <p className="text-xl font-bold">{c.value}</p>
+            <CardContent className="pt-3">
+              <p className="text-3xl font-bold tabular-nums">{c.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Main convergence chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">
-            Accuracy Convergence:  Mean ± Std (shaded) + Min/Max (dashed)
+      <Card className="border-2 overflow-hidden">
+        <CardHeader className="pb-4 bg-muted/40 border-b">
+          <CardTitle className="text-xl font-bold flex items-center gap-2">
+            <span className="inline-block w-3 h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"></span>
+            Accuracy Convergence Over Time
           </CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Mean ± Standard Deviation (shaded area) with Min/Max range (dashed lines)
+          </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {!hasData ? (
             <div className="flex flex-col items-center justify-center h-80 border-2 border-dashed border-muted rounded-lg">
               <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40 mb-4">
@@ -121,7 +138,7 @@ export default function ConvergencePage() {
                 <path d="M13 17V5"/>
                 <path d="M8 17v-3"/>
               </svg>
-              <p className="text-base font-medium text-muted-foreground">No convergence data available yet</p>
+              <p className="text-base font-semibold text-muted-foreground">No convergence data available yet</p>
               <p className="text-xs text-muted-foreground/60 mt-1">Run a federated learning simulation to see convergence metrics</p>
             </div>
           ) : (
