@@ -156,12 +156,37 @@ export default function SimulationPage() {
         )}
       </div>
 
+      {/* Hero banner */}
+      <div className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🚀</span>
+            <div>
+              <p className="text-lg font-bold tracking-tight">Launch V1.0 — Now Available</p>
+              <p className="text-xs text-muted-foreground">Federated learning simulation at the edge</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-6">
+            {[
+              { value: "3+", label: "Nodes" },
+              { value: "<100ms", label: "Latency" },
+              { value: "100%", label: "Privacy" },
+              { value: "99.9%", label: "Uptime" },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="text-xl font-bold tabular-nums text-primary">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Config form */}
         <Card className="border-2">
-          <CardHeader className="pb-4 bg-muted/40 border-b">
+          <CardHeader className="pb-4 border-b">
             <CardTitle className="text-lg font-bold">Configuration</CardTitle>
-            <CardDescription>Set simulation parameters</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
             <Form {...form}>
@@ -324,7 +349,7 @@ export default function SimulationPage() {
 
                 <div className="flex gap-2 pt-2">
                   <Button type="submit" disabled={running} className="flex-1 font-semibold">
-                    {running ? "🚀 Running…" : "🚀 Start Simulation"}
+                    {running ? "🚀 Running…" : "Start Simulation"}
                   </Button>
                   {running && (
                     <Button
