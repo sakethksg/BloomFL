@@ -44,7 +44,7 @@ const data = {
   ],
   navSecondary: [
     { title: "Config", url: "/config", icon: IconSettings },
-    { title: "Docs", url: "https://github.com", icon: IconHelp },
+    { title: "Docs", url: "https://github.com/sakethksg/BloomFL", icon: IconHelp },
   ],
 }
 

@@ -185,9 +185,11 @@ export default function LandingPage() {
                   Launch Dashboard
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                View Docs
-              </Button>
+              <Link href="https://github.com/sakethksg/BloomFL" target="_blank" rel="noopener noreferrer">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                  View Docs
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
