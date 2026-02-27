@@ -35,25 +35,26 @@ interface GraphEdge {
 }
 
 // Simple force-layout canvas graph (no extra dep needed)
+const CANVAS_W = 900;
+const CANVAS_H = 480;
+
 function GossipCanvas({
   nodes,
   edges,
-  width = 700,
-  height = 480,
 }: {
   nodes: GraphNode[];
   edges: GraphEdge[];
-  width?: number;
-  height?: number;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const width = CANVAS_W;
+  const height = CANVAS_H;
 
   // Place nodes in a circle
   const positions = useMemo(() => {
     const map: Record<string, { x: number; y: number }> = {};
     const cx = width / 2;
     const cy = height / 2;
-    const r = Math.min(cx, cy) * 0.65;
+    const r = Math.min(cx, cy) * 0.62;
     nodes.forEach((n, i) => {
       const angle = (2 * Math.PI * i) / nodes.length - Math.PI / 2;
       map[n.id] = { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
@@ -88,7 +89,8 @@ function GossipCanvas({
     for (const node of nodes) {
       const pos = positions[node.id];
       if (!pos) continue;
-      const radius = 14 + node.peers * 2;
+      // Fixed base radius; small bump per peer so size difference stays subtle
+      const radius = 28 + Math.min(node.peers, 4);
 
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
@@ -102,7 +104,8 @@ function GossipCanvas({
       ctx.font = "bold 10px monospace";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      const label = node.id.slice(-6);
+      // Show last 8 chars → "node-000" for "sim-node-000"
+      const label = node.id.length > 8 ? node.id.slice(-8) : node.id;
       ctx.fillText(label, pos.x, pos.y);
     }
   }, [positions, edges, nodes, width, height]);
@@ -112,8 +115,7 @@ function GossipCanvas({
       ref={canvasRef}
       width={width}
       height={height}
-      className="rounded-xl bg-gradient-to-br from-muted/20 to-muted/40 w-full max-w-full border border-muted/50"
-      style={{ maxHeight: height }}
+      className="rounded-xl bg-gradient-to-br from-muted/20 to-muted/40 border border-muted/50 block w-full"
     />
   );
 }
