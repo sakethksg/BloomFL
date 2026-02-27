@@ -3,100 +3,92 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Navbar,
-  NavBody,
-  NavItems,
-  MobileNav,
-  MobileNavHeader,
-  MobileNavToggle,
-  MobileNavMenu,
-} from "@/components/ui/resizable-navbar";
+import { IconMenu2, IconX } from "@tabler/icons-react";
 
 const navLinks = [
-  { link: "#features", name: "Features" },
-  { link: "#benefits", name: "Benefits" },
-  { link: "#cta", name: "Contact" },
+  { href: "#features", label: "Features" },
+  { href: "#benefits", label: "Benefits" },
+  { href: "#cta", label: "Get Started" },
 ];
 
-const Logo = () => (
-  <Link href="/" className="relative z-20 flex items-center gap-2 group mr-4">
-    <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white font-bold text-sm group-hover:shadow-lg transition-shadow">
-      B
-    </div>
-    <span className="font-bold text-lg tracking-tight text-foreground">
-      BloomFL
-    </span>
-  </Link>
-);
-
 export function LandingNavbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="relative w-full">
-      <Navbar>
-        {/* Desktop Navigation */}
-        <NavBody>
-          <Logo />
-          <NavItems items={navLinks} />
-          <div className="flex items-center gap-2">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="hidden text-sm sm:inline-flex"
-            >
+    <header
+      className="fixed inset-x-0 top-0 z-50 bg-background/30 backdrop-blur-md border-b border-border/30 shadow-sm"
+    >
+      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-bold text-sm group-hover:shadow-lg transition-shadow">
+              B
+            </div>
+            <span className="font-bold text-lg tracking-tight">BloomFL</span>
+          </Link>
+
+          {/* Desktop nav links */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="px-4 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+
+          {/* Desktop CTA buttons */}
+          <div className="hidden md:flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm">
               <Link href="/dashboard">Dashboard</Link>
             </Button>
-            <Button asChild size="sm" className="text-sm">
-              <Link href="#cta">Get Started</Link>
+            <Button asChild size="sm">
+              <a href="#cta">Get Started</a>
             </Button>
           </div>
-        </NavBody>
 
-        {/* Mobile Navigation */}
-        <MobileNav>
-          <MobileNavHeader>
-            <Logo />
-            <MobileNavToggle
-              isOpen={isMobileMenuOpen}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            />
-          </MobileNavHeader>
-
-          <MobileNavMenu
-            isOpen={isMobileMenuOpen}
-            onClose={() => setIsMobileMenuOpen(false)}
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label="Toggle menu"
           >
-            {navLinks.map((item, idx) => (
-              <Link
-                key={`mobile-link-${idx}`}
-                href={item.link}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="relative text-neutral-600 dark:text-neutral-300"
-              >
-                <span className="block">{item.name}</span>
+            {mobileOpen ? <IconX className="size-5" /> : <IconMenu2 className="size-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-md px-4 pb-6 pt-4 space-y-1">
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileOpen(false)}
+              className="block px-4 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+            >
+              {link.label}
+            </a>
+          ))}
+          <div className="flex flex-col gap-3 pt-4">
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                Dashboard
               </Link>
-            ))}
-            <div className="flex w-full flex-col gap-4 mt-4">
-              <Button asChild variant="outline" className="w-full">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              </Button>
-              <Button asChild className="w-full">
-                <Link href="#cta" onClick={() => setIsMobileMenuOpen(false)}>
-                  Get Started
-                </Link>
-              </Button>
-            </div>
-          </MobileNavMenu>
-        </MobileNav>
-      </Navbar>
-    </div>
+            </Button>
+            <Button asChild className="w-full">
+              <a href="#cta" onClick={() => setMobileOpen(false)}>
+                Get Started
+              </a>
+            </Button>
+          </div>
+        </div>
+      )}
+    </header>
   );
 }

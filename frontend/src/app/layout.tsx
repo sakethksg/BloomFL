@@ -24,7 +24,7 @@ const sourceCodePro = Source_Code_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "BloomFL Dashboard",
+  title: "BloomFL ",
   description: "Decentralised Federated Learning — BloomFL",
 };
 

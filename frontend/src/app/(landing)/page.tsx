@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Aurora from "@/components/ui/aurora";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   IconNetwork,
@@ -45,14 +46,14 @@ export default function LandingPage() {
 
   return (
     <>
-      {/* Background Effects */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5" />
-
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "0s" }} />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1.5s" }} />
-          <div className="absolute top-1/4 left-1/2 w-72 h-72 bg-chart-2/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "3s" }} />
+      {/* Aurora Background */}
+      <div className="fixed inset-0 -z-10 pointer-events-none">
+        <Aurora
+          colorStops={["#6ee7b7", "#22d3ee", "#818cf8"]}
+          blend={0.7}
+          amplitude={1.3}
+          speed={0.6}
+        />
       </div>
 
       {/* Hero Section */}
@@ -88,7 +89,7 @@ export default function LandingPage() {
       {/* Features Section */}
       <section
         id="features"
-        className="relative py-24 px-4 lg:px-8 bg-muted/20 scroll-mt-36"
+        className="relative py-24 px-4 lg:px-8 scroll-mt-36"
       >
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12 space-y-2">
@@ -102,7 +103,7 @@ export default function LandingPage() {
             {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <Card key={feature.title} className="border-border/60 hover:border-primary/50 hover:shadow-lg transition-all duration-300 group cursor-pointer">
+                <Card key={feature.title} className="border-border/30 bg-background/30 backdrop-blur-sm hover:border-primary/50 hover:shadow-lg transition-all duration-300 group cursor-pointer">
                   <CardHeader>
                     <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
                       <Icon className="size-6 text-primary" />
@@ -124,7 +125,7 @@ export default function LandingPage() {
       {/* Benefits Section */}
       <section
         id="benefits"
-        className="relative py-24 px-4 lg:px-8 bg-muted/40 scroll-mt-36"
+        className="relative py-24 px-4 lg:px-8 scroll-mt-36"
       >
         <div className="mx-auto max-w-6xl">
           <div className="space-y-8">
@@ -137,7 +138,7 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {benefits.map((benefit) => (
-                <div key={benefit} className="flex items-start gap-4 p-6 rounded-lg border border-border/40 hover:border-primary/50 hover:bg-card/50 transition-all duration-300">
+                <div key={benefit} className="flex items-start gap-4 p-6 rounded-lg border border-border/30 bg-background/30 backdrop-blur-sm hover:border-primary/50 hover:bg-background/40 transition-all duration-300">
                   <IconCheck className="size-6 text-primary shrink-0 mt-1" />
                   <span className="text-lg font-medium">{benefit}</span>
                 </div>
@@ -150,7 +151,7 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section id="cta" className="relative py-24 px-4 lg:px-8 scroll-mt-36">
         <div className="mx-auto max-w-3xl">
-          <Card className="border-2 border-primary/50 bg-gradient-to-br from-primary/5 to-accent/5 relative">
+          <Card className="border-2 border-primary/30 bg-background/30 backdrop-blur-sm relative">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl mb-2">Ready to get started?</CardTitle>
               <CardDescription className="text-base">
@@ -174,7 +175,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative border-t border-border/40 bg-muted/20 py-16 px-4 lg:px-8">
+      <footer className="relative border-t border-border/30 bg-background/30 backdrop-blur-sm py-16 px-4 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="space-y-4">

@@ -7,9 +7,9 @@ export default function LandingLayout({
   children: ReactNode;
 }>) {
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="relative min-h-screen">
       <LandingNavbar />
-      {children}
+      <div className="pt-16">{children}</div>
     </div>
   );
 }
