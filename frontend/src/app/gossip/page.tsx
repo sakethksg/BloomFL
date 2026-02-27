@@ -15,8 +15,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { IconNetwork } from "@tabler/icons-react";
+import { IconNetwork, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 
 interface GraphNode {
   id: string;
@@ -34,7 +35,7 @@ interface GraphEdge {
   round: number;
 }
 
-// Simple force-layout canvas graph (no extra dep needed)
+// Simple force-layout canvas graph base resolution
 const CANVAS_W = 900;
 const CANVAS_H = 420;
 
@@ -67,6 +68,19 @@ function GossipCanvas({
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    // Get the actual rendered size to prevent blurriness
+    const rect = canvas.getBoundingClientRect();
+    
+    // Scale internal resolution to match CSS layout size exactly
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
+    // Calculate scaling factor to keep hardcoded coordinates working
+    const scaleX = rect.width / width;
+    const scaleY = rect.height / height;
+    ctx.scale(dpr * scaleX, dpr * scaleY);
 
     ctx.clearRect(0, 0, width, height);
 
@@ -105,16 +119,16 @@ function GossipCanvas({
       const pos = positions[node.id];
       if (!pos) continue;
 
-      // Outer glow
+      // Outer glow (Dark green theme)
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, RADIUS + 8, 0, 2 * Math.PI);
-      ctx.fillStyle = "rgba(99,102,241,0.18)";
+      ctx.fillStyle = "rgba(21, 128, 61, 0.18)"; 
       ctx.fill();
 
-      // Gradient fill
+      // Gradient fill (Dark green theme)
       const grad = ctx.createRadialGradient(pos.x - RADIUS * 0.3, pos.y - RADIUS * 0.3, 2, pos.x, pos.y, RADIUS);
-      grad.addColorStop(0, "#818cf8");
-      grad.addColorStop(1, "#4f46e5");
+      grad.addColorStop(0, "#22c55e"); // Lighter green for highlight/depth
+      grad.addColorStop(1, "#14532d"); // Dark green base
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, RADIUS, 0, 2 * Math.PI);
       ctx.fillStyle = grad;
@@ -138,10 +152,8 @@ function GossipCanvas({
   return (
     <canvas
       ref={canvasRef}
-      width={width}
-      height={height}
       className="block w-full"
-      style={{ aspectRatio: `${CANVAS_W}/${CANVAS_H}` }}
+      style={{ width: "100%", aspectRatio: `${CANVAS_W}/${CANVAS_H}` }}
     />
   );
 }
@@ -299,10 +311,19 @@ export default function GossipPage() {
               </Label>
             </div>
 
-            {/* Slider — only in playback */}
+            {/* Slider with Prev/Next buttons — only in playback */}
             {!liveMode && (
-              <div className="flex flex-1 items-center gap-3 min-w-0">
+              <div className="flex flex-1 items-center gap-3 min-w-0 ml-4">
                 <span className="text-xs font-medium text-muted-foreground shrink-0">Round</span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  disabled={round === 0}
+                  onClick={() => setRound((r) => Math.max(0, r - 1))}
+                >
+                  <IconChevronLeft className="size-4" />
+                </Button>
                 <Slider
                   min={0}
                   max={maxRound}
@@ -311,6 +332,15 @@ export default function GossipPage() {
                   onValueChange={([v]) => setRound(v)}
                   className="flex-1 min-w-[120px]"
                 />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  disabled={round === maxRound}
+                  onClick={() => setRound((r) => Math.min(maxRound, r + 1))}
+                >
+                  <IconChevronRight className="size-4" />
+                </Button>
                 <span className="text-sm font-bold tabular-nums shrink-0 w-14 text-right">
                   {round} <span className="text-muted-foreground font-normal">/ {maxRound}</span>
                 </span>
@@ -340,7 +370,7 @@ export default function GossipPage() {
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5"><span className="inline-block w-5 h-0.5 bg-green-500 rounded" />Success</span>
               <span className="flex items-center gap-1.5"><span className="inline-block w-5 h-0.5 bg-red-500 rounded" />Failed</span>
-              <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-500" />Node</span>
+              <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-full bg-green-800" />Node</span>
             </div>
           </div>
         </CardHeader>
@@ -348,12 +378,7 @@ export default function GossipPage() {
           {graphNodes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4">
               <div className="rounded-full bg-muted/50 p-4 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40">
-                  <circle cx="18" cy="18" r="3"/>
-                  <circle cx="6" cy="6" r="3"/>
-                  <circle cx="13" cy="13" r="3"/>
-                  <path d="M6 21V9a9 9 0 0 0 9 9"/>
-                </svg>
+                <IconNetwork className="text-muted-foreground/40 size-12" />
               </div>
               <p className="text-base font-semibold text-muted-foreground mb-1">No gossip data for round {round}</p>
               <p className="text-sm text-muted-foreground/60 max-w-sm text-center">Start a simulation to see peer-to-peer model exchanges.</p>
