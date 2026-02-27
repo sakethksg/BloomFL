@@ -17,7 +17,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { IconNetwork, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { 
+  IconNetwork, 
+  IconChevronLeft, 
+  IconChevronRight,
+  IconPlayerPlay,
+  IconPlayerPause
+} from "@tabler/icons-react";
 
 interface GraphNode {
   id: string;
@@ -155,6 +161,7 @@ export default function GossipPage() {
   const [liveMode, setLiveMode] = useState(true);
   const [round, setRound] = useState(0);
   const [maxRound, setMaxRound] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const loadHistory = useCallback(async () => {
     try {
@@ -207,6 +214,26 @@ export default function GossipPage() {
 
   useWebSocket<NodeState>("nodes", handleLive);
 
+  // Auto-play interval effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isPlaying && !liveMode) {
+      if (round < maxRound) {
+        interval = setInterval(() => {
+          setRound((r) => r + 1);
+        }, 1200); // 1.2s delay per round
+      } else {
+        // Automatically stop when reaching the end
+        setIsPlaying(false);
+      }
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, liveMode, round, maxRound]);
+
   const { graphNodes, graphEdges } = useMemo(() => {
     const gnodes: GraphNode[] = [];
     const gedges: GraphEdge[] = [];
@@ -234,6 +261,20 @@ export default function GossipPage() {
     }
     return { graphNodes: gnodes, graphEdges: gedges };
   }, [allHistory, round]);
+
+  // Pause playback if the user manually changes the slider
+  const handleSliderChange = (val: number) => {
+    setIsPlaying(false);
+    setRound(val);
+  };
+
+  const togglePlayback = () => {
+    if (round >= maxRound && !isPlaying) {
+      // If at the end, restart from 0 when hitting play
+      setRound(0);
+    }
+    setIsPlaying(!isPlaying);
+  };
 
   if (loading) {
     return (
@@ -270,7 +311,6 @@ export default function GossipPage() {
   return (
     <div className="space-y-6 px-4 lg:px-8 py-6 max-w-[1600px] mx-auto">
       
-      {/* --- INJECTED CSS FOR ANIMATION --- */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes rowFadeIn {
           from { opacity: 0; transform: translateY(6px); }
@@ -303,7 +343,10 @@ export default function GossipPage() {
                 checked={liveMode}
                 onCheckedChange={(v) => {
                   setLiveMode(v);
-                  if (v) setRound(maxRound);
+                  if (v) {
+                    setIsPlaying(false);
+                    setRound(maxRound);
+                  }
                 }}
                 className="data-[state=checked]:bg-green-500"
               />
@@ -317,28 +360,42 @@ export default function GossipPage() {
             {!liveMode && (
               <div className="flex flex-1 items-center gap-3 min-w-0 sm:ml-4 sm:border-l sm:pl-8 border-border/50">
                 <span className="text-xs font-medium text-muted-foreground shrink-0 hidden sm:inline-block">Timeline</span>
+                
+                {/* Auto-Play Toggle */}
+                <Button
+                  variant={isPlaying ? "default" : "outline"}
+                  size="icon"
+                  className={`h-8 w-8 shrink-0 mr-1 transition-colors ${isPlaying ? 'bg-primary text-primary-foreground' : ''}`}
+                  onClick={togglePlayback}
+                  title={isPlaying ? "Pause" : "Play"}
+                >
+                  {isPlaying ? <IconPlayerPause className="size-4" /> : <IconPlayerPlay className="size-4" />}
+                </Button>
+
                 <Button
                   variant="outline"
                   size="icon"
                   className="h-8 w-8 shrink-0"
-                  disabled={round === 0}
+                  disabled={round === 0 || isPlaying}
                   onClick={() => setRound((r) => Math.max(0, r - 1))}
                 >
                   <IconChevronLeft className="size-4" />
                 </Button>
+                
                 <Slider
                   min={0}
                   max={maxRound}
                   step={1}
                   value={[round]}
-                  onValueChange={([v]) => setRound(v)}
+                  onValueChange={([v]) => handleSliderChange(v)}
                   className="flex-1 min-w-[120px] max-w-xl"
                 />
+                
                 <Button
                   variant="outline"
                   size="icon"
                   className="h-8 w-8 shrink-0"
-                  disabled={round === maxRound}
+                  disabled={round === maxRound || isPlaying}
                   onClick={() => setRound((r) => Math.min(maxRound, r + 1))}
                 >
                   <IconChevronRight className="size-4" />
@@ -422,11 +479,8 @@ export default function GossipPage() {
                 <tbody className="divide-y">
                   {graphEdges.map((e, i) => (
                     <tr 
-                      // 1. By tying the React key to the current round, React unmounts/remounts the row, triggering the animation.
                       key={`${round}-${e.source}-${e.target}-${i}`} 
-                      // 2. Add the custom animation class
                       className="hover:bg-muted/30 transition-colors animate-fade-row"
-                      // 3. Stagger the animation timing based on row index
                       style={{ animationDelay: `${i * 45}ms` }}
                     >
                       <td className="px-4 py-3 align-top">
