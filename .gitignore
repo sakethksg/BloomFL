@@ -116,6 +116,9 @@ proto/*.pb2_grpc.py
 *.onnx
 *.h5
 
+# Model Weights Folder
+weights/
+
 # Docker
 .docker/
 docker/.env

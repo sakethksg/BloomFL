@@ -1,28 +1,24 @@
 """
-Inference router — Unified YOLO and FastSAM detection endpoints.
-
-Automatically detects model type (YOLO or FastSAM) from checkpoint filename.
+FastSAM Router — Segmentation detection endpoints.
 
 Single-checkpoint endpoints
 ---------------------------
-  GET  /api/inference/status              → model status
-  POST /api/inference/detect              → DetectionResult JSON
-  POST /api/inference/detect/annotated    → annotated JPEG bytes
+  GET  /api/fastsam/status              → model status
+  POST /api/fastsam/detect              → DetectionResult JSON
+  POST /api/fastsam/detect/annotated    → annotated JPEG bytes
 
-Multi-checkpoint (multi-node) endpoints
+Multi-checkpoint endpoints
 ----------------------------------------
-  GET  /api/inference/checkpoints         → list of discovered .pt checkpoints
-  POST /api/inference/detect/multi        → list[NodeDetectionResult] JSON
-  POST /api/inference/detect/multi/annotated → list[NodeDetectionResult] + base64 annotated JPEGs
-  
-All endpoints support both YOLO and FastSAM models transparently.
+  GET  /api/fastsam/checkpoints         → list of discovered .pt checkpoints
+  POST /api/fastsam/detect/multi        → list[NodeDetectionResult] JSON
+  POST /api/fastsam/detect/multi/annotated → list[NodeDetectionResult] + base64 annotated JPEGs
 """
 from __future__ import annotations
 
 import logging
 from typing import List
 
-from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, File, Query, UploadFile, HTTPException
 from fastapi.responses import Response
 
 from api.models.schemas import (
@@ -31,26 +27,26 @@ from api.models.schemas import (
     InferenceStatusSchema,
     NodeDetectionResultSchema,
 )
-from api.services.inference_service import (
+from api.services.inference_service import discover_checkpoints
+from api.services.fastsam_service import (
     detect as svc_detect,
     detect_annotated as svc_detect_annotated,
     detect_multi,
     detect_multi_annotated,
-    discover_checkpoints,
-    get_inference_service,
+    get_fastsam_service,
 )
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/inference", tags=["inference"])
+router = APIRouter(prefix="/api/fastsam", tags=["fastsam"])
 
 
 # ── Status ────────────────────────────────────────────────────────────────────
 
 @router.get("/status", response_model=InferenceStatusSchema)
-async def inference_status():
-    """Return whether the default YOLO model is loaded, its checkpoint path, and device."""
-    svc = get_inference_service()
+async def fastsam_status():
+    """Return whether the default FastSAM model is loaded, its checkpoint path, and device."""
+    svc = get_fastsam_service()
     return InferenceStatusSchema(
         model_loaded=svc.is_loaded,
         checkpoint_path=svc._checkpoint,
@@ -58,36 +54,17 @@ async def inference_status():
     )
 
 
-@router.get("/capabilities")
-async def inference_capabilities():
-    """Return available inference capabilities (YOLO, FastSAM, etc.)."""
-    capabilities = {
-        "yolo": True,  # Always available via ultralytics
-        "fastsam": False,
-    }
-    
-    try:
-        from fastsam import FastSAM
-        capabilities["fastsam"] = True
-    except ImportError:
-        pass
-    
-    return capabilities
-
-
 # ── Checkpoint discovery ──────────────────────────────────────────────────────
 
 @router.get("/checkpoints", response_model=List[CheckpointInfoSchema])
-async def list_checkpoints(detection_type: str | None = Query(None, description="Filter by detection type: 'yolo' or 'fastsam'")):
-    """Scan well-known directories for BloomFL node `.pt` checkpoints.
+async def list_fastsam_checkpoints(detection_type: str | None = Query("fastsam", description="Filter by detection type (always fastsam for this endpoint)")):
+    """Scan directories for FastSAM `.pt` checkpoints.
 
-    Always returns the pretrained baseline entry first (if type matches),
-    followed by any gossip-trained node checkpoints found in ``./keys/``,
-    ``./checkpoints/``, and the configured ``key_storage_dir``.
-    
-    Pass `detection_type=yolo` or `detection_type=fastsam` to filter results.
+    Returns the pretrained ``FastSAM-s.pt`` baseline entry first,
+    followed by any fine-tuned node checkpoints found in ``./keys/``,
+    ``./checkpoints/``, etc.
     """
-    return discover_checkpoints(detection_type=detection_type)
+    return discover_checkpoints(detection_type="fastsam")
 
 
 # ── Single-checkpoint endpoints ───────────────────────────────────────────────
@@ -96,24 +73,23 @@ async def list_checkpoints(detection_type: str | None = Query(None, description=
 async def detect(
     file: UploadFile = File(..., description="Image file (JPEG, PNG, WebP, BMP)"),
     conf: float = Query(0.35, ge=0.01, le=1.0, description="Confidence threshold"),
-    checkpoint: str = Query("", description="Checkpoint path (auto-detects YOLO or FastSAM)"),
+    checkpoint: str = Query("", description="Checkpoint path (empty = default FastSAM-s.pt)"),
 ):
-    """Upload an image and receive detections as JSON.
+    """Upload an image and receive segmentation result as JSON.
 
-    Automatically detects whether checkpoint is YOLO or FastSAM based on filename.
     Pass an optional ``checkpoint`` query parameter to use a specific model;
-    omit it (or pass empty string) for the pretrained YOLO baseline.
+    omit it (or pass empty string) for the pretrained baseline.
     """
     image_bytes = await file.read()
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Uploaded file is empty")
     try:
-        result = svc_detect(image_bytes, checkpoint=checkpoint, conf=conf)
+        result = svc_detect(image_bytes, checkpoint=checkpoint or "FastSAM-s.pt", conf=conf)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Inference error")
-        raise HTTPException(status_code=500, detail=f"Inference failed: {exc}") from exc
+        logger.exception("FastSAM inference error")
+        raise HTTPException(status_code=500, detail=f"FastSAM inference failed: {exc}") from exc
     return DetectionResultSchema(**result)
 
 
@@ -124,27 +100,23 @@ async def detect(
 async def detect_annotated(
     file: UploadFile = File(..., description="Image file (JPEG, PNG, WebP, BMP)"),
     conf: float = Query(0.35, ge=0.01, le=1.0, description="Confidence threshold"),
-    checkpoint: str = Query("", description="Checkpoint path (auto-detects YOLO or FastSAM)"),
+    checkpoint: str = Query("", description="Checkpoint path (empty = default)"),
 ):
-    """Upload an image; receive it back as an annotated JPEG.
-
-    Automatically detects model type. YOLO: persons in green, other classes in grey.
-    FastSAM: segmentation masks in green.
-    """
+    """Upload an image; receive it back as an annotated JPEG with segmentations."""
     image_bytes = await file.read()
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Uploaded file is empty")
     try:
-        annotated = svc_detect_annotated(image_bytes, checkpoint=checkpoint, conf=conf)
+        annotated = svc_detect_annotated(image_bytes, checkpoint=checkpoint or "FastSAM-s.pt", conf=conf)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Annotated inference error")
-        raise HTTPException(status_code=500, detail=f"Inference failed: {exc}") from exc
+        logger.exception("FastSAM annotated inference error")
+        raise HTTPException(status_code=500, detail=f"FastSAM inference failed: {exc}") from exc
     return Response(content=annotated, media_type="image/jpeg")
 
 
-# ── Multi-checkpoint (multi-node) endpoints ───────────────────────────────────
+# ── Multi-checkpoint endpoints ────────────────────────────────────────────────
 
 @router.post("/detect/multi", response_model=List[NodeDetectionResultSchema])
 async def detect_multi_endpoint(
@@ -152,19 +124,12 @@ async def detect_multi_endpoint(
     conf: float = Query(0.35, ge=0.01, le=1.0, description="Confidence threshold"),
     checkpoints: str = Query(
         "",
-        description=(
-            "Comma-separated list of checkpoint paths to compare. "
-            "Empty string means: use all discovered checkpoints."
-        ),
+        description="Comma-separated list of checkpoint paths. Empty = use all discovered.",
     ),
 ):
-    """Run the same image through **multiple checkpoints** in one request.
+    """Run FastSAM inference through **multiple checkpoints** in one request.
 
-    Returns a list of :class:`NodeDetectionResult` — one per checkpoint.
-    Automatically handles both YOLO and FastSAM models based on checkpoint names.
-
-    * Pass ``checkpoints=`` empty (default) to run all discovered checkpoints.
-    * Pass ``checkpoints=yolo12n.pt,FastSAM-s.pt`` to select specific ones.
+    Returns a list of NodeDetectionResult — one per checkpoint.
     """
     image_bytes = await file.read()
     if not image_bytes:
@@ -177,8 +142,8 @@ async def detect_multi_endpoint(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Multi-inference error")
-        raise HTTPException(status_code=500, detail=f"Multi-inference failed: {exc}") from exc
+        logger.exception("FastSAM multi-inference error")
+        raise HTTPException(status_code=500, detail=f"FastSAM multi-inference failed: {exc}") from exc
 
     return [NodeDetectionResultSchema(**r) for r in results]
 
@@ -192,12 +157,10 @@ async def detect_multi_annotated_endpoint(
         description="Comma-separated checkpoint paths; empty = all discovered.",
     ),
 ):
-    """Run the image through multiple checkpoints and return annotated images.
+    """Run FastSAM through multiple checkpoints and return annotated images.
 
-    Each result contains all :class:`NodeDetectionResult` fields **plus**
-    an ``annotated_jpeg_b64`` — a base64-encoded JPEG with annotations.
-    Automatically handles both YOLO (bounding boxes) and FastSAM (segmentation masks).
-    The frontend can render it directly as ``<img src="data:image/jpeg;base64,...">``.
+    Each result contains all NodeDetectionResult fields **plus**
+    an ``annotated_jpeg_b64`` — a base64-encoded JPEG with segmentations.
     """
     image_bytes = await file.read()
     if not image_bytes:
@@ -210,8 +173,8 @@ async def detect_multi_annotated_endpoint(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
-        logger.exception("Multi-annotated inference error")
-        raise HTTPException(status_code=500, detail=f"Multi-annotated inference failed: {exc}") from exc
+        logger.exception("FastSAM multi-annotated inference error")
+        raise HTTPException(status_code=500, detail=f"FastSAM multi-annotated inference failed: {exc}") from exc
 
     return [NodeDetectionResultSchema(**r) for r in results]
 
@@ -219,8 +182,8 @@ async def detect_multi_annotated_endpoint(
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _parse_checkpoints(raw: str) -> list[str]:
-    """Parse comma-separated checkpoint param; fall back to all discovered."""
+    """Parse comma-separated checkpoint param; fall back to fastsam checkpoints."""
     if raw.strip():
         return [c.strip() for c in raw.split(",") if c.strip()]
-    # No explicit list → use everything discovered
-    return [entry["path"] for entry in discover_checkpoints()]
+    # No explicit list → use all discovered fastsam checkpoints
+    return [entry["path"] for entry in discover_checkpoints(detection_type="fastsam")]

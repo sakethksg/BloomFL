@@ -164,6 +164,7 @@ class CheckpointInfoSchema(BaseModel):
     path: str
     exists: bool
     is_pretrained: bool
+    detection_type: str = "unknown"  # "yolo", "fastsam", or "unknown"
 
 
 class InferenceStatusSchema(BaseModel):
