@@ -103,6 +103,17 @@ def _run_model(model, frame, conf: float, ckpt_label: str = "") -> dict:
     boxes = []
     person_count = 0
     
+    # Handle case where model returns None
+    if results is None:
+        logger.debug("Model returned None for %s", ckpt_label)
+        return {
+            "boxes": boxes,
+            "person_count": person_count,
+            "inference_time_ms": round(elapsed_ms, 2),
+            "model_path": ckpt_label,
+            "_model_results": [],
+        }
+    
     for r in results:
         if hasattr(r, 'boxes') and r.boxes is not None:
             for box in r.boxes:
@@ -152,6 +163,11 @@ def _annotate_frame(frame, model_results, checkpoint: str = "") -> bytes:
     import cv2
     font = cv2.FONT_HERSHEY_SIMPLEX
     detection_type = get_detection_type(checkpoint)
+    
+    # Handle case where model_results is None
+    if model_results is None:
+        logger.debug("Model results are None for %s", checkpoint)
+        model_results = []
     
     for r in model_results:
         # Draw bounding boxes
