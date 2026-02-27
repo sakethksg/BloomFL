@@ -72,7 +72,7 @@ export function ChartAreaInteractive() {
   }))
 
   return (
-    <Card className="@container/card border-2">
+    <Card className="@container/card border shadow-sm">
       <CardHeader className="flex items-center gap-4 space-y-0 border-b py-6 sm:flex-row">
         <div className="grid flex-1 gap-1">
           <CardTitle className="text-2xl font-bold">Training Progress</CardTitle>

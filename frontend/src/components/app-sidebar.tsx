@@ -34,7 +34,7 @@ const data = {
     avatar: "",
   },
   navMain: [
-    { title: "Dashboard", url: "/", icon: IconDashboard },
+    { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
     { title: "Nodes", url: "/nodes", icon: IconServer },
     { title: "Metrics", url: "/metrics", icon: IconChartBar },
     { title: "Gossip Graph", url: "/gossip", icon: IconNetwork },

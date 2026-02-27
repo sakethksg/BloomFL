@@ -35,20 +35,20 @@ export function SectionCards() {
   const bytesMb = summary?.total_bytes_mb
 
   return (
-    <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 lg:grid-cols-4">
       {/* Active Nodes */}
-      <Card className="@container/card border-2 hover:border-primary/50 transition-colors overflow-hidden">
-        <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent pb-4">
-          <CardDescription className="text-xs font-semibold uppercase tracking-wider">Active Nodes</CardDescription>
+      <Card className="@container/card border hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md overflow-hidden">
+        <CardHeader className="pb-4">
+          <CardDescription className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Active Nodes</CardDescription>
           <CardTitle className="text-4xl font-bold tabular-nums @[250px]/card:text-5xl">
             {nodes.length > 0 ? activeNodes : "—"}
           </CardTitle>
           <CardAction className="mt-2">
             <Badge
               variant="outline"
-              className={wsStatus === "connected" ? "border-green-500 text-green-600 font-semibold" : ""}
+              className={wsStatus === "connected" ? "border-green-500 text-green-600 bg-green-50 dark:bg-green-950 font-semibold" : "font-semibold"}
             >
-              {wsStatus === "connected" ? "🟢 Live" : "📡 Polling"}
+              {wsStatus === "connected" ? "Live" : "Polling"}
             </Badge>
           </CardAction>
         </CardHeader>
@@ -61,9 +61,9 @@ export function SectionCards() {
       </Card>
 
       {/* Mean Accuracy */}
-      <Card className="@container/card border-2 hover:border-primary/50 transition-colors overflow-hidden">
-        <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent pb-4">
-          <CardDescription className="text-xs font-semibold uppercase tracking-wider">Mean Accuracy</CardDescription>
+      <Card className="@container/card border hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md overflow-hidden">
+        <CardHeader className="pb-4">
+          <CardDescription className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mean Accuracy</CardDescription>
           <CardTitle className="text-4xl font-bold tabular-nums @[250px]/card:text-5xl">
             {accuracy != null ? `${(accuracy * 100).toFixed(1)}%` : "—"}
           </CardTitle>
@@ -90,9 +90,9 @@ export function SectionCards() {
       </Card>
 
       {/* Convergence */}
-      <Card className="@container/card border-2 hover:border-primary/50 transition-colors overflow-hidden">
-        <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent pb-4">
-          <CardDescription className="text-xs font-semibold uppercase tracking-wider">Convergence Round</CardDescription>
+      <Card className="@container/card border hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md overflow-hidden">
+        <CardHeader className="pb-4">
+          <CardDescription className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Convergence Round</CardDescription>
           <CardTitle className="text-4xl font-bold tabular-nums @[250px]/card:text-5xl">
             {convergenceRound != null ? `R${convergenceRound}` : "Pending"}
           </CardTitle>
@@ -119,9 +119,9 @@ export function SectionCards() {
       </Card>
 
       {/* Gossip Bytes */}
-      <Card className="@container/card border-2 hover:border-primary/50 transition-colors overflow-hidden">
-        <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent pb-4">
-          <CardDescription className="text-xs font-semibold uppercase tracking-wider">Gossip Exchanged</CardDescription>
+      <Card className="@container/card border hover:border-primary/50 transition-all duration-200 shadow-sm hover:shadow-md overflow-hidden">
+        <CardHeader className="pb-4">
+          <CardDescription className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Gossip Exchanged</CardDescription>
           <CardTitle className="text-4xl font-bold tabular-nums @[250px]/card:text-5xl">
             {bytesMb != null ? `${bytesMb.toFixed(1)} MB` : "—"}
           </CardTitle>

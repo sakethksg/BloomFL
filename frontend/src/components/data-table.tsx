@@ -186,20 +186,20 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
           variant="outline"
           className={
             s === "active"
-              ? "border-green-500 text-green-600 px-1.5"
+              ? "border-green-500 text-green-600 bg-green-50 dark:bg-green-950 font-medium"
               : s === "error"
-              ? "border-red-500 text-red-600 px-1.5"
-              : "text-muted-foreground px-1.5"
+              ? "border-red-500 text-red-600 bg-red-50 dark:bg-red-950 font-medium"
+              : "text-muted-foreground bg-muted/50 font-medium"
           }
         >
           {s === "active" ? (
-            <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+            <IconCircleCheckFilled className="size-3 mr-1.5 fill-green-500 dark:fill-green-400" />
           ) : s === "error" ? (
-            <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400" />
+            <IconCircleCheckFilled className="size-3 mr-1.5 fill-red-500 dark:fill-red-400" />
           ) : (
-            <IconLoader />
+            <IconLoader className="size-3 mr-1.5" />
           )}
-          {s}
+          <span className="capitalize">{s}</span>
         </Badge>
       )
     },
@@ -331,6 +331,10 @@ export function DataTable({
     useSensor(KeyboardSensor, {})
   )
 
+  React.useEffect(() => {
+    setData(initialData)
+  }, [initialData])
+
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => data?.map(({ id }) => id) || [],
     [data]
@@ -424,7 +428,7 @@ export function DataTable({
       </div>
       
       <div className="px-4 lg:px-6">
-        <div className="overflow-hidden rounded-lg border-2">
+        <div className="overflow-hidden rounded-lg border shadow-sm">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
