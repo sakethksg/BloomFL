@@ -1,16 +1,16 @@
-import Link from "next/link";
-import { IconScan } from "@tabler/icons-react";
+"use client";
 
-export const metadata = {
-  title: "Detection - BloomFL",
-  description: "Object detection and segmentation inference",
-};
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { IconScan } from "@tabler/icons-react";
 
 export default function DetectionLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
@@ -23,13 +23,21 @@ export default function DetectionLayout({
           <nav className="flex gap-4 text-sm">
             <Link 
               href="/detection/yolo" 
-              className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              className={`px-3 py-2 rounded-lg transition-colors ${
+                pathname === "/detection/yolo" 
+                  ? "bg-muted dark:bg-slate-700" 
+                  : "hover:bg-muted"
+              }`}
             >
               YOLO
             </Link>
             <Link 
               href="/detection/fastsam" 
-              className="px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              className={`px-3 py-2 rounded-lg transition-colors ${
+                pathname === "/detection/fastsam" 
+                  ? "bg-muted dark:bg-slate-700" 
+                  : "hover:bg-muted"
+              }`}
             >
               FastSAM
             </Link>
