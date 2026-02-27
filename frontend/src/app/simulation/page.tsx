@@ -13,7 +13,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   Form,
@@ -36,11 +35,16 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { fmtPct } from "@/components/shared/NodeBadges";
-import { IconRocket } from "@tabler/icons-react";
+import {
+  IconRocket,
+  IconServer,
+  IconWifi,
+  IconTargetArrow,
+  IconPlayerPlay,
+  IconPlayerStop,
+} from "@tabler/icons-react";
 
 const schema = z.object({
   num_nodes: z.coerce.number().min(2).max(16),
@@ -137,96 +141,212 @@ export default function SimulationPage() {
     : 0;
 
   return (
-    <div className="space-y-6 px-4 lg:px-6 py-6">
+    <div className="space-y-4 px-4 lg:px-6 py-4">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <IconRocket className="size-7 text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">Simulation</h1>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Launch and monitor a multi-node BloomFL simulation with configurable network conditions and convergence parameters.
-          </p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <IconRocket className="size-5 text-primary" />
+          <h1 className="text-xl font-bold tracking-tight">Simulation</h1>
         </div>
         {running && (
-          <Badge className="shrink-0 px-4 py-2 text-base font-bold bg-green-600 animate-pulse">
+          <Badge className="shrink-0 px-3 py-1 text-xs font-bold bg-green-600 animate-pulse">
             Running
           </Badge>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Config form */}
-        <Card className="border-2">
-          <CardHeader className="pb-4 border-b">
-            <CardTitle className="text-lg font-bold">Configuration</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
+        <Card className="border">
+          <CardContent className="pt-4 pb-4">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="num_nodes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Num Nodes</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="rounds"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Rounds</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="transport"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Transport</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
+                {/* Section: Topology */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                    <IconServer className="size-3" />
+                    Topology
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="num_nodes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold">Nodes</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                className="pl-3 pr-12 font-mono h-8 text-sm"
+                                {...field}
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                2–16
+                              </span>
+                            </div>
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="tcp">TCP</SelectItem>
-                            <SelectItem value="grpc">gRPC</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="rounds"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold">Rounds</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                className="pl-3 pr-16 font-mono h-8 text-sm"
+                                {...field}
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                1–500
+                              </span>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="transport"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold">Transport</FormLabel>
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <FormControl>
+                              <SelectTrigger className="font-mono text-sm h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="tcp">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
+                                  TCP
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="grpc">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block" />
+                                  gRPC
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="base_port"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold">Base Port</FormLabel>
+                          <FormControl>
+                            <Input type="number" className="font-mono text-sm h-8" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Section: Network Conditions */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                    <IconWifi className="size-3" />
+                    Network Conditions
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="mean_delay_ms"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <FormLabel className="text-xs">Mean Delay</FormLabel>
+                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${field.value > 0 ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"}`}>
+                            {field.value} ms
+                          </span>
+                        </div>
+                        <FormControl>
+                          <Slider min={0} max={500} step={5} value={[field.value]} onValueChange={([v]) => field.onChange(v)} />
+                        </FormControl>
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
-                    name="base_port"
+                    name="std_delay_ms"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <FormLabel className="text-xs">Delay Jitter</FormLabel>
+                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${field.value > 0 ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"}`}>
+                            ±{field.value} ms
+                          </span>
+                        </div>
+                        <FormControl>
+                          <Slider min={0} max={200} step={5} value={[field.value]} onValueChange={([v]) => field.onChange(v)} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="failure_prob"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <FormLabel className="text-xs">Drop Rate</FormLabel>
+                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${field.value > 0 ? "bg-red-500/15 text-red-600 dark:text-red-400" : "bg-muted text-muted-foreground"}`}>
+                            {(field.value * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <FormControl>
+                          <Slider min={0} max={1} step={0.01} value={[field.value]} onValueChange={([v]) => field.onChange(v)} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Section: Convergence */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                    <IconTargetArrow className="size-3" />
+                    Convergence
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="convergence_threshold"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Base Port</FormLabel>
+                        <FormLabel className="text-xs">Threshold (std)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              step="0.001"
+                              className="font-mono pr-12 h-8 text-sm"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">std</span>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -234,105 +354,16 @@ export default function SimulationPage() {
                   />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="mean_delay_ms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Mean Network Delay — {field.value} ms
-                      </FormLabel>
-                      <FormControl>
-                        <Slider
-                          min={0}
-                          max={500}
-                          step={5}
-                          value={[field.value]}
-                          onValueChange={([v]) => field.onChange(v)}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="std_delay_ms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Delay Std — {field.value} ms
-                      </FormLabel>
-                      <FormControl>
-                        <Slider
-                          min={0}
-                          max={200}
-                          step={5}
-                          value={[field.value]}
-                          onValueChange={([v]) => field.onChange(v)}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="failure_prob"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Message Drop Probability — {(field.value * 100).toFixed(0)}%
-                      </FormLabel>
-                      <FormControl>
-                        <Slider
-                          min={0}
-                          max={1}
-                          step={0.01}
-                          value={[field.value]}
-                          onValueChange={([v]) => field.onChange(v)}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="convergence_threshold"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Convergence Threshold (std)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.001"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Declare convergence when accuracy std &lt; this value
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex gap-2 pt-2">
-                  <Button type="submit" disabled={running} className="flex-1 font-semibold">
-                    {running ? "🚀 Running…" : "Start Simulation"}
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={running} size="sm" className="flex-1 font-semibold gap-1.5">
+                    <IconPlayerPlay className="size-3.5" />
+                    {running ? "Running…" : "Start Simulation"}
                   </Button>
                   {running && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={onStop}
-                      className="font-semibold"
-                    >
-                      ⏹ Stop
+                    <Button type="button" variant="destructive" size="sm" onClick={onStop} className="font-semibold gap-1.5">
+                      <IconPlayerStop className="size-3.5" />
+                      Stop
                     </Button>
                   )}
                 </div>
