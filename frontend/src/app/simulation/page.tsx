@@ -13,11 +13,11 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -44,6 +44,8 @@ import {
   IconTargetArrow,
   IconPlayerPlay,
   IconPlayerStop,
+  IconTerminal2,
+  IconActivity,
 } from "@tabler/icons-react";
 
 const schema = z.object({
@@ -80,7 +82,6 @@ export default function SimulationPage() {
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
 
-  // Poll status every 2 s while running
   useEffect(() => {
     const poll = async () => {
       try {
@@ -97,7 +98,6 @@ export default function SimulationPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // WS progress messages
   useWebSocket<{ event: string; round?: number; message?: string }>(
     "simulation",
     useCallback((data: { event: string; round?: number; message?: string }) => {
@@ -106,19 +106,17 @@ export default function SimulationPage() {
         data.message ?? JSON.stringify(data),
       ]);
       if (data.round != null) {
-        setStatus((s) =>
-          s ? { ...s, progress_rounds: data.round! } : s
-        );
+        setStatus((s) => (s ? { ...s, progress_rounds: data.round! } : s));
       }
     }, [])
   );
 
   async function onSubmit(values: FormValues) {
     setResult(null);
-    setLogs([`[${new Date().toLocaleTimeString()}] Starting simulation…`]);
+    setLogs([`[${new Date().toLocaleTimeString()}] System initializing...`, `[${new Date().toLocaleTimeString()}] Starting simulation with ${values.num_nodes} nodes…`]);
     try {
       await api.simulation.start(values);
-      toast.success("Simulation started");
+      toast.success("Simulation sequence initiated");
     } catch (e) {
       toast.error(`Failed to start: ${e}`);
     }
@@ -127,7 +125,7 @@ export default function SimulationPage() {
   async function onStop() {
     try {
       await api.simulation.stop();
-      toast.info("Simulation stopped");
+      toast.info("Simulation halted by user");
     } catch (e) {
       toast.error(`Stop failed: ${e}`);
     }
@@ -141,334 +139,293 @@ export default function SimulationPage() {
     : 0;
 
   return (
-    <div className="space-y-4 px-4 lg:px-6 py-4">
+    <div className="max-w-screen-2xl mx-auto px-4 lg:px-6 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <IconRocket className="size-5 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight">Simulation</h1>
+      <div className="flex items-center justify-between pb-2 border-b">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <IconRocket className="size-6 text-primary" />
+            Simulation Studio
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Configure, launch, and monitor your federated learning network.
+          </p>
         </div>
         {running && (
-          <Badge className="shrink-0 px-3 py-1 text-xs font-bold bg-green-600 animate-pulse">
-            Running
-          </Badge>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full text-green-600 dark:text-green-400">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider">Live</span>
+          </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Config form */}
-        <Card className="border">
-          <CardContent className="pt-4 pb-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* LEFT COLUMN: Configuration (4 cols) */}
+        <div className="lg:col-span-4 space-y-4 sticky top-6">
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-4 bg-muted/30 border-b">
+              <CardTitle className="text-lg flex items-center gap-2">
+                Parameters
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-5 pb-5">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-                {/* Section: Topology */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                    <IconServer className="size-3" />
-                    Topology
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <FormField
-                      control={form.control}
-                      name="num_nodes"
-                      render={({ field }) => (
+                  {/* Topology */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b pb-1">
+                      <IconServer className="size-3.5" />
+                      Topology
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField control={form.control} name="num_nodes" render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold">Nodes</FormLabel>
+                          <FormLabel className="text-xs">Nodes</FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="number"
-                                className="pl-3 pr-12 font-mono h-8 text-sm"
-                                {...field}
-                              />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                                2–16
-                              </span>
-                            </div>
+                            <Input type="number" className="font-mono text-sm h-9" {...field} />
                           </FormControl>
-                          <FormMessage />
                         </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="rounds"
-                      render={({ field }) => (
+                      )} />
+                      <FormField control={form.control} name="rounds" render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold">Rounds</FormLabel>
+                          <FormLabel className="text-xs">Rounds</FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="number"
-                                className="pl-3 pr-16 font-mono h-8 text-sm"
-                                {...field}
-                              />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                                1–500
-                              </span>
-                            </div>
+                            <Input type="number" className="font-mono text-sm h-9" {...field} />
                           </FormControl>
-                          <FormMessage />
                         </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <FormField
-                      control={form.control}
-                      name="transport"
-                      render={({ field }) => (
+                      )} />
+                      <FormField control={form.control} name="transport" render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold">Transport</FormLabel>
+                          <FormLabel className="text-xs">Transport</FormLabel>
                           <Select value={field.value} onValueChange={field.onChange}>
                             <FormControl>
-                              <SelectTrigger className="font-mono text-sm h-8">
-                                <SelectValue />
-                              </SelectTrigger>
+                              <SelectTrigger className="font-mono text-sm h-9"><SelectValue /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="tcp">
-                                <div className="flex items-center gap-2">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
-                                  TCP
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="grpc">
-                                <div className="flex items-center gap-2">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block" />
-                                  gRPC
-                                </div>
-                              </SelectItem>
+                              <SelectItem value="tcp">TCP</SelectItem>
+                              <SelectItem value="grpc">gRPC</SelectItem>
                             </SelectContent>
                           </Select>
-                          <FormMessage />
                         </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="base_port"
-                      render={({ field }) => (
+                      )} />
+                      <FormField control={form.control} name="base_port" render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold">Base Port</FormLabel>
+                          <FormLabel className="text-xs">Base Port</FormLabel>
                           <FormControl>
-                            <Input type="number" className="font-mono text-sm h-8" {...field} />
+                            <Input type="number" className="font-mono text-sm h-9" {...field} />
                           </FormControl>
-                          <FormMessage />
                         </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {/* Section: Network Conditions */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                    <IconWifi className="size-3" />
-                    Network Conditions
+                      )} />
+                    </div>
                   </div>
 
-                  <FormField
-                    control={form.control}
-                    name="mean_delay_ms"
-                    render={({ field }) => (
+                  {/* Network Conditions */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b pb-1">
+                      <IconWifi className="size-3.5" />
+                      Network Conditions
+                    </div>
+                    <FormField control={form.control} name="mean_delay_ms" render={({ field }) => (
                       <FormItem className="space-y-1">
                         <div className="flex items-center justify-between">
                           <FormLabel className="text-xs">Mean Delay</FormLabel>
-                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${field.value > 0 ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"}`}>
-                            {field.value} ms
-                          </span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{field.value} ms</span>
                         </div>
-                        <FormControl>
-                          <Slider min={0} max={500} step={5} value={[field.value]} onValueChange={([v]) => field.onChange(v)} />
-                        </FormControl>
+                        <FormControl><Slider className="w-full py-2" min={0} max={500} step={5} value={[field.value]} onValueChange={([v]) => field.onChange(v)} /></FormControl>
                       </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="std_delay_ms"
-                    render={({ field }) => (
+                    )} />
+                    <FormField control={form.control} name="std_delay_ms" render={({ field }) => (
                       <FormItem className="space-y-1">
                         <div className="flex items-center justify-between">
                           <FormLabel className="text-xs">Delay Jitter</FormLabel>
-                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${field.value > 0 ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"}`}>
-                            ±{field.value} ms
-                          </span>
+                          <span className="text-[10px] font-mono text-muted-foreground">±{field.value} ms</span>
                         </div>
-                        <FormControl>
-                          <Slider min={0} max={200} step={5} value={[field.value]} onValueChange={([v]) => field.onChange(v)} />
-                        </FormControl>
+                        <FormControl><Slider className="w-full py-2" min={0} max={200} step={5} value={[field.value]} onValueChange={([v]) => field.onChange(v)} /></FormControl>
                       </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="failure_prob"
-                    render={({ field }) => (
+                    )} />
+                    <FormField control={form.control} name="failure_prob" render={({ field }) => (
                       <FormItem className="space-y-1">
                         <div className="flex items-center justify-between">
                           <FormLabel className="text-xs">Drop Rate</FormLabel>
-                          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${field.value > 0 ? "bg-red-500/15 text-red-600 dark:text-red-400" : "bg-muted text-muted-foreground"}`}>
-                            {(field.value * 100).toFixed(0)}%
-                          </span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{(field.value * 100).toFixed(0)}%</span>
                         </div>
-                        <FormControl>
-                          <Slider min={0} max={1} step={0.01} value={[field.value]} onValueChange={([v]) => field.onChange(v)} />
-                        </FormControl>
+                        <FormControl><Slider className="w-full py-2" min={0} max={1} step={0.01} value={[field.value]} onValueChange={([v]) => field.onChange(v)} /></FormControl>
                       </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Section: Convergence */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                    <IconTargetArrow className="size-3" />
-                    Convergence
+                    )} />
                   </div>
-                  <FormField
-                    control={form.control}
-                    name="convergence_threshold"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs">Threshold (std)</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type="number"
-                              step="0.001"
-                              className="font-mono pr-12 h-8 text-sm"
-                              {...field}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                            />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">std</span>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={running} size="sm" className="flex-1 font-semibold gap-1.5">
-                    <IconPlayerPlay className="size-3.5" />
-                    {running ? "Running…" : "Start Simulation"}
-                  </Button>
-                  {running && (
-                    <Button type="button" variant="destructive" size="sm" onClick={onStop} className="font-semibold gap-1.5">
-                      <IconPlayerStop className="size-3.5" />
-                      Stop
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        {/* Status + logs */}
-        <div className="space-y-4">
-          {/* Progress */}
-          {status && (
-            <Card className="border-2 overflow-hidden">
-              <CardHeader className="pb-4 bg-muted/40 border-b">
-                <CardTitle className="text-base font-bold">
-                  Status:{" "}
-                  <Badge className="ml-2 capitalize">
-                    {status.status === "finished" ? "✓ Completed" : status.status}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-4">
-                {running && (
-                  <>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-semibold">Progress</span>
-                        <span className="tabular-nums">{progress.toFixed(0)}%</span>
-                      </div>
-                      <Progress value={progress} className="h-3" />
-                      <p className="text-xs text-muted-foreground">
-                        Round {status.progress_rounds} / {status.total_rounds}
-                      </p>
+                  {/* Convergence */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest border-b pb-1">
+                      <IconTargetArrow className="size-3.5" />
+                      Convergence Target
                     </div>
-                  </>
-                )}
-                {status.status === "finished" && (
-                  <div className="space-y-2 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                    <p className="text-sm font-semibold text-green-700 dark:text-green-400">
-                      ✓ Simulation completed successfully
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Wall time: {status.wall_time_seconds?.toFixed(2)} seconds
-                    </p>
+                    <FormField control={form.control} name="convergence_threshold" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Threshold (Std Dev)</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.001" className="font-mono h-9 text-sm" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
+                        </FormControl>
+                      </FormItem>
+                    )} />
                   </div>
-                )}
-                {status.error && (
-                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                    <p className="text-xs text-destructive font-medium">{status.error}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
-          {/* Result summary */}
-          {result && (
-            <Card className="border-2 border-green-500/50 overflow-hidden">
-              <CardHeader className="pb-4 bg-gradient-to-r from-green-500/10 to-transparent border-b border-green-500/30">
-                <CardTitle className="text-base font-bold text-green-700 dark:text-green-400 flex items-center gap-2">
-                  <span className="text-2xl">✓</span> Simulation Complete
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-muted/40 rounded-lg">
-                    <p className="text-xs font-semibold text-muted-foreground mb-1">Converged</p>
-                    <p className="text-lg font-bold">{result.converged ? "✓ Yes" : "✗ No"}</p>
+                  {/* Actions */}
+                  <div className="pt-2 flex gap-3">
+                    <Button type="submit" disabled={running} className="flex-1 font-bold shadow-md bg-green-600 hover:bg-green-700 text-white transition-all">
+                      <IconPlayerPlay className="size-4 mr-2" />
+                      {running ? "Running…" : "Launch Simulation"}
+                    </Button>
+                    {running && (
+                      <Button type="button" variant="destructive" onClick={onStop} className="font-bold shadow-md">
+                        <IconPlayerStop className="size-4 mr-2" />
+                        Halt
+                      </Button>
+                    )}
                   </div>
-                  <div className="p-3 bg-muted/40 rounded-lg">
-                    <p className="text-xs font-semibold text-muted-foreground mb-1">Duration</p>
-                    <p className="text-lg font-bold">{result.wall_time_seconds.toFixed(1)}s</p>
-                  </div>
-                </div>
-                <div className="space-y-1 text-sm">
-                  {Object.entries(result.convergence_stats).map(([k, v]) => (
-                    <p key={k} className="flex justify-between">
-                      <span className="text-muted-foreground capitalize">{k.replace("_", " ")}:</span>
-                      <strong>{String(v)}</strong>
-                    </p>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Log feed */}
-          {logs.length > 0 && (
-            <Card className="border-2 overflow-hidden">
-              <CardHeader className="pb-4 bg-muted/40 border-b">
-                <CardTitle className="text-base font-bold">Event Log</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-64 px-4 py-4">
-                  <div className="font-mono text-xs space-y-1">
-                    {logs.map((l, i) => (
-                      <p key={i} className="text-muted-foreground hover:text-foreground transition-colors">
+        {/* RIGHT COLUMN: Output & Logs (8 cols) */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
+          
+          {/* Top Panel: Dynamic Status Area */}
+          <div className="min-h-[160px]">
+            {/* State 1: Idle (No Status, No Result) */}
+            {!status && !result && (
+              <Card className="border border-dashed bg-muted/30 shadow-none flex flex-col items-center justify-center h-full text-muted-foreground py-12">
+                <IconActivity className="size-10 mb-3 opacity-20" />
+                <p className="text-sm font-medium text-foreground">Awaiting Execution</p>
+                <p className="text-xs">Configure your parameters on the left and click Launch.</p>
+              </Card>
+            )}
+
+            {/* State 2: Running Progress */}
+            {status && !result && (
+              <Card className="border-2 border-primary/20 shadow-sm">
+                <CardHeader className="pb-3 border-b bg-muted/10">
+                  <CardTitle className="text-sm font-bold flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <IconActivity className="size-4 text-primary animate-pulse" />
+                      Simulation in Progress
+                    </span>
+                    <span className="font-mono text-muted-foreground font-normal">
+                      Round {status.progress_rounds} of {status.total_rounds}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6 pb-8 space-y-3">
+                  <div className="flex items-end justify-between text-sm mb-1">
+                    <span className="font-bold text-foreground">Overall Progress</span>
+                    <span className="text-2xl font-black text-primary tabular-nums tracking-tighter">
+                      {progress.toFixed(0)}%
+                    </span>
+                  </div>
+                  <Progress value={progress} className="h-4 bg-muted" />
+                  {status.error && (
+                    <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded text-sm font-medium">
+                      Error encountered: {status.error}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* State 3: Completed Results */}
+            {result && (
+              <Card className="border-green-500/30 border-2 overflow-hidden shadow-sm">
+                <CardHeader className="py-3 border-b bg-muted/10">
+                  <CardTitle className="text-sm font-bold flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                    Simulation Completed Successfully
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Key Metrics */}
+                    <div className="md:col-span-1 flex flex-row md:flex-col gap-3">
+                      <div className="flex-1 p-4 bg-background border rounded-lg flex flex-col justify-center shadow-sm">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Converged</span>
+                        <span className={`text-2xl font-black ${result.converged ? 'text-green-600 dark:text-green-500' : 'text-red-500'}`}>
+                          {result.converged ? "Yes" : "No"}
+                        </span>
+                      </div>
+                      <div className="flex-1 p-4 bg-background border rounded-lg flex flex-col justify-center shadow-sm">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Duration</span>
+                        <span className="text-2xl font-black text-foreground">
+                          {result.wall_time_seconds.toFixed(1)}s
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Stats List */}
+                    <div className="md:col-span-2 space-y-2 flex flex-col justify-center">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+                        Convergence Metrics
+                      </span>
+                      <div className="border rounded-md divide-y bg-background text-sm shadow-sm">
+                        {Object.entries(result.convergence_stats).map(([k, v]) => (
+                          <div key={k} className="flex justify-between items-center px-4 py-2 hover:bg-muted/30 transition-colors">
+                            <span className="text-muted-foreground capitalize font-medium">{k.replaceAll("_", " ")}</span>
+                            <span className="font-mono font-semibold">{String(v)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Bottom Panel: Terminal Event Log */}
+          <Card className="border-0 shadow-lg bg-zinc-950 dark:bg-[#0c0c0e] rounded-xl overflow-hidden flex flex-col h-[400px]">
+            <div className="bg-zinc-900/80 dark:bg-black/50 border-b border-zinc-800/80 px-4 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <IconTerminal2 className="text-zinc-400 size-4" />
+                <span className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">System Output</span>
+              </div>
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+              </div>
+            </div>
+            
+            <ScrollArea className="flex-1 p-4">
+              {logs.length === 0 ? (
+                <div className="text-zinc-600 font-mono text-xs italic flex h-full items-center justify-center pt-20">
+                  Waiting for simulation logs...
+                </div>
+              ) : (
+                <div className="font-mono text-[13px] leading-relaxed space-y-1 text-zinc-300">
+                  {logs.map((l, i) => {
+                    // Simple highlight for common log types
+                    const isError = l.toLowerCase().includes("error") || l.toLowerCase().includes("fail");
+                    const isSuccess = l.toLowerCase().includes("success") || l.toLowerCase().includes("converged");
+                    
+                    return (
+                      <div key={i} className={`hover:bg-zinc-800/50 px-1 rounded transition-colors ${
+                        isError ? "text-red-400" : isSuccess ? "text-green-400" : ""
+                      }`}>
+                        <span className="text-zinc-600 mr-2">❯</span>
                         {l}
-                      </p>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </ScrollArea>
+          </Card>
+          
         </div>
       </div>
     </div>
