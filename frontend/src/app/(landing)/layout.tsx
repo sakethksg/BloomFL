@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { LandingNavbar } from "@/components/landing-navbar";
 
 export default function LandingLayout({
   children,
@@ -7,6 +8,7 @@ export default function LandingLayout({
 }>) {
   return (
     <div className="relative min-h-screen bg-background">
+      <LandingNavbar />
       {children}
     </div>
   );
