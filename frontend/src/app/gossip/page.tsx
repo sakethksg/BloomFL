@@ -121,26 +121,33 @@ function GossipCanvas({
 export default function GossipPage() {
   const [allHistory, setAllHistory] = useState<Record<string, NodeState[]>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [liveMode, setLiveMode] = useState(true);
   const [round, setRound] = useState(0);
   const [maxRound, setMaxRound] = useState(0);
 
   const loadHistory = useCallback(async () => {
-    const nodes = await api.nodes.list();
-    const entries = await Promise.all(
-      nodes.map((n) =>
-        api.nodes.history(n.node_id).then((h) => [n.node_id, h] as const)
-      )
-    );
-    const history = Object.fromEntries(entries);
-    setAllHistory(history);
-    const max = Math.max(
-      0,
-      ...Object.values(history).flatMap((recs) => recs.map((r) => r.round))
-    );
-    setMaxRound(max);
-    if (liveMode) setRound(max);
-    setLoading(false);
+    try {
+      const nodes = await api.nodes.list();
+      const entries = await Promise.all(
+        nodes.map((n) =>
+          api.nodes.history(n.node_id).then((h) => [n.node_id, h] as const)
+        )
+      );
+      const history = Object.fromEntries(entries);
+      setAllHistory(history);
+      const max = Math.max(
+        0,
+        ...Object.values(history).flatMap((recs) => recs.map((r) => r.round))
+      );
+      setMaxRound(max);
+      if (liveMode) setRound(max);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load gossip data");
+    } finally {
+      setLoading(false);
+    }
   }, [liveMode]);
 
   useEffect(() => {
@@ -200,7 +207,34 @@ export default function GossipPage() {
     return { graphNodes: gnodes, graphEdges: gedges };
   }, [allHistory, round]);
 
-  if (loading) return <Skeleton className="h-96 w-full mx-4 lg:mx-6 mt-6" />;
+  if (loading) {
+    return (
+      <div className="space-y-6 px-4 lg:px-6 py-6">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="px-4 lg:px-6 py-6">
+        <Card className="border-2 border-destructive/30">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <div className="rounded-full bg-destructive/10 p-4">
+                <IconNetwork className="size-8 text-destructive" />
+              </div>
+              <p className="text-lg font-semibold">Failed to load gossip data</p>
+              <p className="text-sm text-muted-foreground">{error}</p>
+              <p className="text-xs text-muted-foreground">Make sure the backend is running and try again.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 px-4 lg:px-6 py-6">
