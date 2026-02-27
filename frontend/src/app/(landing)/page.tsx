@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   IconNetwork,
   IconDatabase,
@@ -60,10 +59,6 @@ export default function LandingPage() {
       <section className="relative pt-16 pb-24 px-4 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="text-center space-y-6 mb-12">
-            <Badge variant="outline" className="mx-auto">
-              🚀 Launch V1.0 — Now Available
-            </Badge>
-
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
               Decentralized{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
