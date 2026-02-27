@@ -36,7 +36,7 @@ interface GraphEdge {
 
 // Simple force-layout canvas graph (no extra dep needed)
 const CANVAS_W = 900;
-const CANVAS_H = 480;
+const CANVAS_H = 420;
 
 function GossipCanvas({
   nodes,
@@ -54,7 +54,7 @@ function GossipCanvas({
     const map: Record<string, { x: number; y: number }> = {};
     const cx = width / 2;
     const cy = height / 2;
-    const r = Math.min(cx, cy) * 0.62;
+    const r = Math.min(cx, cy) * 0.58;
     nodes.forEach((n, i) => {
       const angle = (2 * Math.PI * i) / nodes.length - Math.PI / 2;
       map[n.id] = { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
@@ -70,41 +70,66 @@ function GossipCanvas({
 
     ctx.clearRect(0, 0, width, height);
 
-    // Draw edges
+    // Draw edges with glow
     for (const edge of edges) {
       const s = positions[edge.source];
       const t = positions[edge.target];
       if (!s || !t) continue;
+
+      const color = edge.success ? "#10b981" : "#ef4444";
+      const lw = Math.max(1.5, Math.min(5, edge.bytes / 1024 / 300));
+
+      // glow pass
       ctx.beginPath();
       ctx.moveTo(s.x, s.y);
       ctx.lineTo(t.x, t.y);
-      ctx.strokeStyle = edge.success ? "#10b981" : "#ef4444";
-      ctx.lineWidth = Math.max(1, Math.min(4, edge.bytes / 1024 / 500));
-      ctx.globalAlpha = 0.6;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lw + 6;
+      ctx.globalAlpha = 0.08;
+      ctx.stroke();
+
+      // main line
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(t.x, t.y);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lw;
+      ctx.globalAlpha = 0.75;
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
 
     // Draw nodes
+    const RADIUS = 34;
     for (const node of nodes) {
       const pos = positions[node.id];
       if (!pos) continue;
-      // Fixed base radius; small bump per peer so size difference stays subtle
-      const radius = 28 + Math.min(node.peers, 4);
 
+      // Outer glow
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = "#6366f1";
+      ctx.arc(pos.x, pos.y, RADIUS + 8, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(99,102,241,0.18)";
       ctx.fill();
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 2;
+
+      // Gradient fill
+      const grad = ctx.createRadialGradient(pos.x - RADIUS * 0.3, pos.y - RADIUS * 0.3, 2, pos.x, pos.y, RADIUS);
+      grad.addColorStop(0, "#818cf8");
+      grad.addColorStop(1, "#4f46e5");
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, RADIUS, 0, 2 * Math.PI);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // White ring
+      ctx.strokeStyle = "rgba(255,255,255,0.85)";
+      ctx.lineWidth = 2.5;
       ctx.stroke();
 
+      // Label
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 10px monospace";
+      ctx.font = "bold 11px ui-monospace, monospace";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      // Show last 8 chars → "node-000" for "sim-node-000"
       const label = node.id.length > 8 ? node.id.slice(-8) : node.id;
       ctx.fillText(label, pos.x, pos.y);
     }
@@ -115,7 +140,8 @@ function GossipCanvas({
       ref={canvasRef}
       width={width}
       height={height}
-      className="rounded-xl bg-gradient-to-br from-muted/20 to-muted/40 border border-muted/50 block w-full"
+      className="block w-full"
+      style={{ aspectRatio: `${CANVAS_W}/${CANVAS_H}` }}
     />
   );
 }
@@ -241,27 +267,22 @@ export default function GossipPage() {
   return (
     <div className="space-y-6 px-4 lg:px-6 py-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <IconNetwork className="size-7 text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight">Gossip Graph</h1>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Visualize peer-to-peer model exchanges across the network — green edges indicate successful transfers, red indicates failures. Edge thickness represents data volume.
-          </p>
+      <div>
+        <div className="flex items-center gap-2.5 mb-1">
+          <IconNetwork className="size-6 text-primary" />
+          <h1 className="text-2xl font-bold tracking-tight">Gossip Graph</h1>
         </div>
-        <Badge variant="outline" className="shrink-0 text-xs font-semibold px-3 py-1.5">
-          Round {round}
-        </Badge>
+        <p className="text-sm text-muted-foreground">
+          Visualize peer-to-peer model exchanges — green edges indicate successful transfers, red indicates failures.
+        </p>
       </div>
 
       {/* Controls */}
-      <Card className="border-2">
-        <CardHeader className="pb-4">
-          <div className="space-y-4">
-            {/* Live Mode Toggle */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+      <Card>
+        <CardContent className="py-4">
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Live toggle */}
+            <div className="flex items-center gap-2.5">
               <Switch
                 id="live"
                 checked={liveMode}
@@ -271,140 +292,132 @@ export default function GossipPage() {
                 }}
                 className="data-[state=checked]:bg-green-500"
               />
-              <Label htmlFor="live" className="flex-1 font-semibold cursor-pointer">
-                {liveMode ? "🟢 Live Mode Active" : "Playback Mode"}
+              <Label htmlFor="live" className="cursor-pointer font-medium text-sm select-none">
+                {liveMode
+                  ? <span className="flex items-center gap-1.5"><span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />Live</span>
+                  : "Playback"}
               </Label>
-              <span className="text-xs text-muted-foreground">
-                {liveMode ? "Showing latest" : "Manual round selection"}
-              </span>
             </div>
 
-            {/* Round Slider */}
+            {/* Slider — only in playback */}
             {!liveMode && (
-              <div className="flex items-center gap-4">
-                <Label className="text-sm font-semibold shrink-0">Select Round:</Label>
+              <div className="flex flex-1 items-center gap-3 min-w-0">
+                <span className="text-xs font-medium text-muted-foreground shrink-0">Round</span>
                 <Slider
                   min={0}
                   max={maxRound}
                   step={1}
                   value={[round]}
                   onValueChange={([v]) => setRound(v)}
-                  className="flex-1"
+                  className="flex-1 min-w-[120px]"
                 />
-                <div className="text-right space-y-1">
-                  <div className="text-lg font-bold tabular-nums">R{round}</div>
-                  <span className="text-xs text-muted-foreground">of R{maxRound}</span>
-                </div>
+                <span className="text-sm font-bold tabular-nums shrink-0 w-14 text-right">
+                  {round} <span className="text-muted-foreground font-normal">/ {maxRound}</span>
+                </span>
               </div>
             )}
+
+            <div className="ml-auto shrink-0">
+              <Badge variant="outline" className="text-xs font-semibold">
+                Round {round}
+              </Badge>
+            </div>
           </div>
-        </CardHeader>
+        </CardContent>
       </Card>
 
       {/* Graph Visualization */}
-      <Card className="border-2 overflow-hidden">
-        <CardHeader className="pb-4 bg-muted/40 border-b">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <CardTitle className="text-xl font-bold flex items-center gap-2">
-                <span className="inline-block w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-emerald-500"></span>
-                Network Topology
-              </CardTitle>
-              <CardDescription className="mt-1">
-                {graphNodes.length} active nodes · {graphEdges.length} exchanges in round {round}
+      <Card className="overflow-hidden">
+        <CardHeader className="py-3 px-5 border-b bg-muted/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
+              <CardTitle className="text-base font-semibold">Network Topology</CardTitle>
+              <CardDescription className="ml-1 text-xs">
+                {graphNodes.length} nodes · {graphEdges.length} exchanges in round {round}
               </CardDescription>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5"><span className="inline-block w-5 h-0.5 bg-green-500 rounded" />Success</span>
+              <span className="flex items-center gap-1.5"><span className="inline-block w-5 h-0.5 bg-red-500 rounded" />Failed</span>
+              <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-500" />Node</span>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="overflow-hidden pt-4">
+        <CardContent className="p-0">
           {graphNodes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4">
               <div className="rounded-full bg-muted/50 p-4 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40">
                   <circle cx="18" cy="18" r="3"/>
                   <circle cx="6" cy="6" r="3"/>
                   <circle cx="13" cy="13" r="3"/>
                   <path d="M6 21V9a9 9 0 0 0 9 9"/>
                 </svg>
               </div>
-              <p className="text-lg font-semibold text-muted-foreground mb-2">No gossip data for round {round}</p>
-              <p className="text-sm text-muted-foreground/70 max-w-md text-center">Nodes haven't exchanged models yet in this round. Start a simulation to see peer-to-peer exchanges.</p>
+              <p className="text-base font-semibold text-muted-foreground mb-1">No gossip data for round {round}</p>
+              <p className="text-sm text-muted-foreground/60 max-w-sm text-center">Start a simulation to see peer-to-peer model exchanges.</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <GossipCanvas nodes={graphNodes} edges={graphEdges} />
-              <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground pt-2 border-t">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-1 bg-green-500 rounded"></div>
-                  <span>Successful</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-1 bg-red-500 rounded"></div>
-                  <span>Failed</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                  <span>Node (size = peer count)</span>
-                </div>
-              </div>
-            </div>
+            <GossipCanvas nodes={graphNodes} edges={graphEdges} />
           )}
         </CardContent>
       </Card>
 
       {/* Exchanges Table */}
       {graphEdges.length > 0 && (
-        <Card className="border-2 overflow-hidden">
-          <CardHeader className="pb-4 bg-muted/40 border-b">
+        <Card className="overflow-hidden">
+          <CardHeader className="py-3 px-5 border-b bg-muted/30">
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-lg font-bold">Exchange Details</CardTitle>
-                <CardDescription className="mt-1">{graphEdges.length} peer-to-peer exchanges</CardDescription>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base font-semibold">Exchange Details</CardTitle>
+                <CardDescription className="text-xs">{graphEdges.length} peer-to-peer exchanges</CardDescription>
               </div>
-              <Badge variant="secondary" className="font-semibold">{graphEdges.filter(e => e.success).length} successful</Badge>
+              <Badge variant="secondary" className="text-xs">
+                {graphEdges.filter(e => e.success).length} successful
+              </Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="overflow-x-auto">
-              <div className="space-y-0 min-w-full">
-                <div className="grid grid-cols-5 gap-4 px-4 py-3 font-semibold text-xs bg-muted/50 rounded-lg sticky top-0 mb-2">
-                  <div>Status</div>
-                  <div>Source → Target</div>
-                  <div className="text-right">Latency</div>
-                  <div className="text-right">Data</div>
-                  <div className="text-right">Round</div>
-                </div>
+          <CardContent className="p-0">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/20">
+                  <th className="px-5 py-2.5 text-left text-xs font-semibold text-muted-foreground w-16">Status</th>
+                  <th className="px-5 py-2.5 text-left text-xs font-semibold text-muted-foreground">Source → Target</th>
+                  <th className="px-5 py-2.5 text-right text-xs font-semibold text-muted-foreground w-28">Latency</th>
+                  <th className="px-5 py-2.5 text-right text-xs font-semibold text-muted-foreground w-28">Data</th>
+                  <th className="px-5 py-2.5 text-right text-xs font-semibold text-muted-foreground w-20">Round</th>
+                </tr>
+              </thead>
+              <tbody>
                 {graphEdges.map((e, i) => (
-                  <div
-                    key={i}
-                    className="grid grid-cols-5 gap-4 px-4 py-3 border-b last:border-0 hover:bg-muted/30 transition-colors text-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                  <tr key={i} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
+                    <td className="px-5 py-3">
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${
+                        e.success ? "text-green-600" : "text-red-500"
+                      }`}>
+                        <span className={`w-2 h-2 rounded-full ${
                           e.success ? "bg-green-500" : "bg-red-500"
-                        }`}
-                      />
-                      <span className="text-xs font-semibold">{e.success ? "✓" : "✗"}</span>
-                    </div>
-                    <div className="font-mono text-xs truncate text-muted-foreground">
-                      <span className="text-foreground font-semibold">{e.source.slice(-4)}</span>
-                      <span> → </span>
-                      <span className="text-foreground font-semibold">{e.target.slice(-4)}</span>
-                    </div>
-                    <div className="text-right text-xs">
-                      <span className="font-mono">{e.latency.toFixed(1)}</span>
-                      <span className="text-muted-foreground"> ms</span>
-                    </div>
-                    <div className="text-right text-xs">
-                      <span className="font-semibold">{(e.bytes / 1024).toFixed(1)}</span>
-                      <span className="text-muted-foreground"> KB</span>
-                    </div>
-                    <div className="text-right text-xs font-mono">R{e.round}</div>
-                  </div>
+                        }`} />
+                        {e.success ? "OK" : "Fail"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 font-mono text-xs">
+                      <span className="font-semibold">{e.source.slice(-8)}</span>
+                      <span className="text-muted-foreground mx-1.5">→</span>
+                      <span className="font-semibold">{e.target.slice(-8)}</span>
+                    </td>
+                    <td className="px-5 py-3 text-right text-xs tabular-nums">
+                      {e.latency.toFixed(1)}<span className="text-muted-foreground ml-0.5">ms</span>
+                    </td>
+                    <td className="px-5 py-3 text-right text-xs tabular-nums font-medium">
+                      {(e.bytes / 1024).toFixed(1)}<span className="text-muted-foreground ml-0.5">KB</span>
+                    </td>
+                    <td className="px-5 py-3 text-right text-xs font-mono text-muted-foreground">R{e.round}</td>
+                  </tr>
                 ))}
-              </div>
-            </div>
+              </tbody>
+            </table>
           </CardContent>
         </Card>
       )}
