@@ -56,9 +56,9 @@ export default function LandingPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-16 pb-24 px-4 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center space-y-6 mb-12">
+      <section className="relative min-h-[84vh] flex items-center px-4 lg:px-8">
+        <div className="mx-auto max-w-6xl w-full">
+          <div className="text-center space-y-6">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
               Decentralized{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -81,28 +81,6 @@ export default function LandingPage() {
                 View Documentation
               </Button>
             </div>
-          </div>
-
-          {/* Hero Card with subtle border */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <Card className="border-2 border-border/50 relative backdrop-blur-sm">
-              <CardContent className="pt-8">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {[
-                    { label: "Nodes", value: "3+" },
-                    { label: "Latency", value: "<100ms" },
-                    { label: "Privacy", value: "100%" },
-                    { label: "Uptime", value: "99.9%" },
-                  ].map((stat) => (
-                    <div key={stat.label} className="text-center">
-                      <div className="text-2xl font-bold">{stat.value}</div>
-                      <div className="text-xs text-muted-foreground">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
@@ -206,7 +184,7 @@ export default function LandingPage() {
                 </div>
                 <span className="font-bold">BloomFL</span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mt-6">
                 Decentralized federated learning infrastructure
               </p>
             </div>
