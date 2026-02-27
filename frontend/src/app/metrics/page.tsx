@@ -24,6 +24,7 @@ import {
   Line,
   AreaChart,
   Area,
+  ComposedChart, // Added ComposedChart
   XAxis,
   YAxis,
   CartesianGrid,
@@ -92,16 +93,24 @@ export default function MetricsPage() {
   })();
 
   // Aggregate band data for mean±std
-  const bandData = perRound.map((r) => ({
-    round: r.round_num,
-    mean: r.mean_accuracy != null ? r.mean_accuracy * 100 : null,
-    upper: r.mean_accuracy != null && r.std_accuracy != null
+  const bandData = perRound.map((r) => {
+    const mean = r.mean_accuracy != null ? r.mean_accuracy * 100 : null;
+    const upper = r.mean_accuracy != null && r.std_accuracy != null
       ? (r.mean_accuracy + r.std_accuracy) * 100
-      : null,
-    lower: r.mean_accuracy != null && r.std_accuracy != null
+      : null;
+    const lower = r.mean_accuracy != null && r.std_accuracy != null
       ? Math.max(0, (r.mean_accuracy - r.std_accuracy) * 100)
-      : null,
-  }));
+      : null;
+
+    return {
+      round: r.round_num,
+      mean,
+      // Create a range array for the area chart to render a floating band
+      range: lower != null && upper != null ? [lower, upper] : null,
+      upper,
+      lower,
+    };
+  });
 
   if (loading) return <Skeleton className="h-96 w-full mx-4 lg:mx-6 mt-6" />;
 
@@ -269,26 +278,25 @@ export default function MetricsPage() {
           </CardHeader>
           <CardContent className="pt-6">
             <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={bandData}>
+              <ComposedChart data={bandData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="round" tick={{ fontSize: 11 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} unit="%" />
-                <Tooltip formatter={(v) => typeof v === "number" ? `${v.toFixed(1)}%` : "—"} />
-                <Area
-                  type="monotone"
-                  dataKey="upper"
-                  stroke="none"
-                  fill="#6366f1"
-                  fillOpacity={0.15}
-                  name="Upper"
+                <Tooltip 
+                  formatter={(value, name) => {
+                    if (name === "Std Dev Band" && Array.isArray(value)) {
+                      return [`${(value[0] as number).toFixed(1)}% - ${(value[1] as number).toFixed(1)}%`, name];
+                    }
+                    return typeof value === "number" ? [`${value.toFixed(1)}%`, name] : ["—", name];
+                  }} 
                 />
                 <Area
                   type="monotone"
-                  dataKey="lower"
+                  dataKey="range"
                   stroke="none"
                   fill="#6366f1"
-                  fillOpacity={0}
-                  name="Lower"
+                  fillOpacity={0.15}
+                  name="Std Dev Band"
                 />
                 <Line
                   type="monotone"
@@ -298,7 +306,7 @@ export default function MetricsPage() {
                   strokeWidth={2}
                   name="Mean Acc"
                 />
-              </AreaChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
