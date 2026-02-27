@@ -13,7 +13,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   Form,
@@ -21,7 +20,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,8 +32,6 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import {
   IconRocket,
@@ -44,7 +40,6 @@ import {
   IconTargetArrow,
   IconPlayerPlay,
   IconPlayerStop,
-  IconTerminal2,
   IconActivity,
 } from "@tabler/icons-react";
 
@@ -80,7 +75,6 @@ export default function SimulationPage() {
 
   const [status, setStatus] = useState<SimulationStatus | null>(null);
   const [result, setResult] = useState<SimulationResult | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
 
   useEffect(() => {
     const poll = async () => {
@@ -101,10 +95,6 @@ export default function SimulationPage() {
   useWebSocket<{ event: string; round?: number; message?: string }>(
     "simulation",
     useCallback((data: { event: string; round?: number; message?: string }) => {
-      setLogs((prev) => [
-        ...prev.slice(-200),
-        data.message ?? JSON.stringify(data),
-      ]);
       if (data.round != null) {
         setStatus((s) => (s ? { ...s, progress_rounds: data.round! } : s));
       }
@@ -113,7 +103,6 @@ export default function SimulationPage() {
 
   async function onSubmit(values: FormValues) {
     setResult(null);
-    setLogs([`[${new Date().toLocaleTimeString()}] System initializing...`, `[${new Date().toLocaleTimeString()}] Starting simulation with ${values.num_nodes} nodes…`]);
     try {
       await api.simulation.start(values);
       toast.success("Simulation sequence initiated");
@@ -294,7 +283,7 @@ export default function SimulationPage() {
           </Card>
         </div>
 
-        {/* RIGHT COLUMN: Output & Logs (8 cols) */}
+        {/* RIGHT COLUMN: Output (8 cols) */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           
           {/* Top Panel: Dynamic Status Area */}
@@ -385,47 +374,6 @@ export default function SimulationPage() {
               </Card>
             )}
           </div>
-
-          {/* Bottom Panel: Terminal Event Log */}
-          <Card className="border-0 shadow-lg bg-zinc-950 dark:bg-[#0c0c0e] rounded-xl overflow-hidden flex flex-col h-[400px]">
-            <div className="bg-zinc-900/80 dark:bg-black/50 border-b border-zinc-800/80 px-4 py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <IconTerminal2 className="text-zinc-400 size-4" />
-                <span className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">System Output</span>
-              </div>
-              <div className="flex gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
-              </div>
-            </div>
-            
-            <ScrollArea className="flex-1 p-4">
-              {logs.length === 0 ? (
-                <div className="text-zinc-600 font-mono text-xs italic flex h-full items-center justify-center pt-20">
-                  Waiting for simulation logs...
-                </div>
-              ) : (
-                <div className="font-mono text-[13px] leading-relaxed space-y-1 text-zinc-300">
-                  {logs.map((l, i) => {
-                    // Simple highlight for common log types
-                    const isError = l.toLowerCase().includes("error") || l.toLowerCase().includes("fail");
-                    const isSuccess = l.toLowerCase().includes("success") || l.toLowerCase().includes("converged");
-                    
-                    return (
-                      <div key={i} className={`hover:bg-zinc-800/50 px-1 rounded transition-colors ${
-                        isError ? "text-red-400" : isSuccess ? "text-green-400" : ""
-                      }`}>
-                        <span className="text-zinc-600 mr-2">❯</span>
-                        {l}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </ScrollArea>
-          </Card>
-          
         </div>
       </div>
     </div>
