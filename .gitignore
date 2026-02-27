@@ -29,6 +29,9 @@ wheels/
 *.egg
 MANIFEST
 
+# Allow Next.js lib directory (frontend source files)
+!frontend/src/lib/
+
 # Virtual Environments
 venv/
 env/
